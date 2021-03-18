@@ -317,7 +317,7 @@ class FileParser:
         self.defPool = {}
 
     # legacy Code Parse from local
-    def parse(self, file):
+    def parseFromLocal(self, file):
         f = open(file, "r")
         vocabId = 0
         prevNode = None

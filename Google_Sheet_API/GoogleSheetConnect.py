@@ -31,7 +31,7 @@ from googleapiclient.discovery import build
 
 #     return records_data
 
-# # Code from Google Sheet API QuickStart Page
+# Code from Google Sheet API QuickStart Page
 
 
 def fetchVocabSheetData():
