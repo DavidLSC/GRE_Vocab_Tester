@@ -1,9 +1,13 @@
+from pprint import pprint
+
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 
 # From Google API quickstart
-#from google.oauth2.credentials import Credentials
+# from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
+
+PATH = "Google_Sheet_API/"
 
 # Code from https://www.analyticsvidhya.com/blog/2020/07/read-and-update-google-spreadsheets-with-python/
 
@@ -38,7 +42,7 @@ def fetchVocabSheetData():
     SCOPES = ['https://www.googleapis.com/auth/drive']
 
     creds = ServiceAccountCredentials.from_json_keyfile_name(
-        'Google_Sheet_API/GREVocabTester-1279d77e0b83.json', SCOPES)
+        PATH + 'GREVocabTester-1279d77e0b83.json', SCOPES)
 
     service = build('sheets', 'v4', credentials=creds)
 
@@ -47,7 +51,9 @@ def fetchVocabSheetData():
     spreadsheet_id = '1hGw6e1lVBJa0axT4fm3qZzmvVIzW7Xcl4FLN43YcDEs'
 
     # Sheet1 A to E collumn
-    range_ = '工作表1!A:F'
+    range = '工作表1!A:F'
+    range_unit3 = 'Unit_3!A:F'
+    range_unit4 = 'Unit_4!A:F'
 
     # How values should be represented in the output.
     # The default render option is ValueRenderOption.FORMATTED_VALUE.
@@ -60,7 +66,7 @@ def fetchVocabSheetData():
     date_time_render_option = ''
 
     request = service.spreadsheets().values().get(
-        spreadsheetId=spreadsheet_id, range=range_, valueRenderOption=value_render_option)
+        spreadsheetId=spreadsheet_id, range=range, valueRenderOption=value_render_option)
     response = request.execute()
 
     # spreadsheets.values
@@ -72,5 +78,63 @@ def fetchVocabSheetData():
     #   ]
     # }
     values = response.get("values")
+
+    return values
+
+
+def fetchEverySheetData():
+    SCOPES = ['https://www.googleapis.com/auth/drive']
+
+    creds = ServiceAccountCredentials.from_json_keyfile_name(
+        PATH + 'GREVocabTester-1279d77e0b83.json', SCOPES)
+
+    service = build('sheets', 'v4', credentials=creds)
+
+    # The ID of the spreadsheet to retrieve data from.
+    # TODO: Update placeholder value.
+    spreadsheet_id = '1hGw6e1lVBJa0axT4fm3qZzmvVIzW7Xcl4FLN43YcDEs'
+
+    # Sheet1 A to E collumn
+    range = '工作表1!A:F'
+    range_unit3 = 'Unit_3!A:F'
+    range_unit4 = 'Unit_4!A:F'
+
+    ranges = [range, range_unit3, range_unit4]
+
+    # How values should be represented in the output.
+    # The default render option is ValueRenderOption.FORMATTED_VALUE.
+    value_render_option = 'FORMATTED_VALUE'
+
+    # How dates, times, and durations should be represented in the output.
+    # This is ignored if value_render_option is
+    # FORMATTED_VALUE.
+    # The default dateTime render option is [DateTimeRenderOption.SERIAL_NUMBER].
+    date_time_render_option = ''
+
+    request = service.spreadsheets().values().batchGet(
+        spreadsheetId=spreadsheet_id, ranges=ranges, valueRenderOption=value_render_option)
+    response = request.execute()
+
+    # {
+    #   "spreadsheetId": string,
+    #   "valueRanges": [
+    #     {
+    #       object (ValueRange)
+    #     }
+    #   ]
+    # }
+
+    # ValueRange
+    # {
+    #   "range": string,
+    #   "majorDimension": enum (Dimension),
+    #   "values": [
+    #     array
+    #   ]
+    # }
+    # print(response)
+    values = []
+    for i in response.get("valueRanges"):
+        values = values + i.get("values")
 
     return values

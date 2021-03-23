@@ -1,4 +1,4 @@
-#import ShellScriptExecuter
+# import ShellScriptExecuter
 from Google_Sheet_API import GoogleSheetConnect
 import Google_Sheet_API
 
@@ -53,7 +53,7 @@ class UnitNode(Node):
 class Vocab(Node):
     def __init__(self, text, definition, vocabRoot, errorCount, importancy):
         super().__init__()
-        self.text = text
+        self.text = text.rstrip()
         self.definition = definition
         self.vocabRoot = vocabRoot
         self.errorCount = errorCount
@@ -225,7 +225,7 @@ class TestQuestionCreator():
     #     return test_q
 
     def __createOptions(self, id_excluded):
-        length = self.vocabControler.getVocabListLength()
+        length = self.vocabControler.getVocabListLength(vocabOnly=True)
         options = []
         while (len(options) < 3):
             index = random.randint(0, length-1)
@@ -235,6 +235,7 @@ class TestQuestionCreator():
                 options.append(index)
         for i in range(len(options)):
             index_def = self.defPool.get(options[i])
+            assert (index_def != None), "Test_Question options contains None type"
             options[i] = index_def
 
         return options
@@ -271,10 +272,10 @@ class TestingApp:
                 else:
                     print("Correct" + "	\u2713")
                 userAnsCount += 1
-            self.printTestResult(userAnsCount)
+            self.__printTestResult(userAnsCount)
         except IndexError:
             print("Finish Test")
-            self.printTestResult(userAnsCount)
+            self.__printTestResult(userAnsCount)
 
     def seeQuestionAns(self, testQuestion):
         userInput = input("Do you want to see the answer? (Y/N) ")
@@ -293,15 +294,15 @@ class TestingApp:
 
     def __printTestResult(self, ansCount):
         print("-----------------------------------")
-        self.printTestStats()
-        self.printWrongList()
+        self.__printTestStats(ansCount)
+        self.__printWrongList()
 
     def __printWrongList(self):
         print("Wrong List -------------")
         for i in self.wrongList:
             print(i.getVocabStr())
 
-    def printTestStats(self, ansCount):
+    def __printTestStats(self, ansCount):
         wrongNum = len(self.wrongList)
         correctNum = ansCount - wrongNum
         print(str(correctNum) + "/" + str(ansCount) +
@@ -353,13 +354,12 @@ class FileParser:
         return firstNode
 
     def parseFromCloud(self):
-        fetchedData = GoogleSheetConnect.fetchVocabSheetData()
+        fetchedData = GoogleSheetConnect.fetchEverySheetData()
         vocabId = 0
         prevNode = None
         firstNode = None
         for i in fetchedData[1:]:
             curNode = None
-            print(i)
             if(len(i) != 0):
                 unitCheck = re.search("Unit_\d", i[0])
                 if(unitCheck):
@@ -381,7 +381,6 @@ class FileParser:
                         curNode.setPrev(prevNode)
                         prevNode.setNext(curNode)
                     prevNode = curNode
-
         return firstNode
 
     def getDefPool(self):
@@ -410,28 +409,39 @@ def App(vocabControler, defPool, test):
 
 def testMode(vocabControler, defPool, test):
     print("Test Mode ")
-    unitInput = input("Please Select a unit : ")
-    startUnitNode = vocabControler.getUnitNode(int(unitInput))
-    endUnitNode = vocabControler.getUnitNode(int(unitInput) + 1)
-    if(startUnitNode):
+    unitInput = input(
+        "Please Select a unit (input 'all' to test every unit): ")
+    if(unitInput != 'all'):
+        startUnitNode = vocabControler.getUnitNode(int(unitInput))
+        endUnitNode = vocabControler.getUnitNode(int(unitInput) + 1)
+        if(startUnitNode):
+            TQ_Creater = TestQuestionCreator(vocabControler, defPool)
+            curNode = startUnitNode
+            while(not(curNode == endUnitNode)):
+                if(curNode.getType() == "vocab"):
+                    tq = TQ_Creater.create(curNode)
+                    test.appendToTestQueue(tq)
+                curNode = curNode.getNext()
+            test.test()
+        else:
+            print("None")
+    else:
         TQ_Creater = TestQuestionCreator(vocabControler, defPool)
-        curNode = startUnitNode
-        while(not(curNode == endUnitNode)):
+        curNode = vocabControler.getFirstVocab()
+        while(curNode):
             if(curNode.getType() == "vocab"):
                 tq = TQ_Creater.create(curNode)
                 test.appendToTestQueue(tq)
             curNode = curNode.getNext()
         test.test()
-    else:
-        print("None")
 
 
 def dictionaryMode(vocabControler):
     print("Dictionary Mode")
-    print("Type in the vocabulary to look up it's definition. Type in Q to quit Dictionary Mode and return to main menu")
     # map for cache
     searchedVocab = {}
     while (True):
+        print("Type in the vocabulary to look up it's definition. Type in Q to quit Dictionary Mode")
         userInput = input()
         if(userInput.upper() == "Q"):
             break
@@ -442,7 +452,7 @@ def dictionaryMode(vocabControler):
                 searchedVocab.setdefault(userInput, result)
                 print(result)
             else:
-                print("This word don't exist in the dictionary")
+                print("This word don't exist in the dictionary\n")
 
 
 def main():
