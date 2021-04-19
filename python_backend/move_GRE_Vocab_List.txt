@@ -1,0 +1,8 @@
+if [ -f ~/Downloads/GRE_Vocab_List\ -\ 工作表1.csv ];
+	then
+		mv ~/Downloads/GRE_Vocab_List\ -\ 工作表1.csv ~/Desktop/projects_for_fun/VocabTester
+		mv -v GRE_Vocab_List\ -\ 工作表1.csv GRE_Vocab_List.csv
+		echo "GRE_Vocab_List is updated"
+	else
+		echo "GRE_Vocab_List - 工作表1.csv is not found in directory ~/Downloads"
+fi

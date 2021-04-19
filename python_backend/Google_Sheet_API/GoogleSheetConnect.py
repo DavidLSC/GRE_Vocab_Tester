@@ -94,13 +94,6 @@ def fetchEverySheetData():
     # TODO: Update placeholder value.
     spreadsheet_id = '1hGw6e1lVBJa0axT4fm3qZzmvVIzW7Xcl4FLN43YcDEs'
 
-    # Sheet1 A to E collumn
-    range = '工作表1!A:F'
-    range_unit3 = 'Unit_3!A:F'
-    range_unit4 = 'Unit_4!A:F'
-
-    ranges = [range, range_unit3, range_unit4]
-
     # How values should be represented in the output.
     # The default render option is ValueRenderOption.FORMATTED_VALUE.
     value_render_option = 'FORMATTED_VALUE'
@@ -111,8 +104,21 @@ def fetchEverySheetData():
     # The default dateTime render option is [DateTimeRenderOption.SERIAL_NUMBER].
     date_time_render_option = ''
 
+    # Get spreadsheet data
+    request_spreadsheet = service.spreadsheets().get(
+        spreadsheetId=spreadsheet_id, ranges=[], includeGridData=False)
+    spreadsheet_response = request_spreadsheet.execute()
+
+    all_sheets = spreadsheet_response.get("sheets")
+
+    # Get all sheets in the spreadsheet
+    all_sheets_title = []
+    for i in all_sheets:
+        all_sheets_title.append(i.get("properties").get("title") + "!A:F")
+
+    # Get all valuse in the spreadsheet
     request = service.spreadsheets().values().batchGet(
-        spreadsheetId=spreadsheet_id, ranges=ranges, valueRenderOption=value_render_option)
+        spreadsheetId=spreadsheet_id, ranges=all_sheets_title, valueRenderOption=value_render_option)
     response = request.execute()
 
     # {

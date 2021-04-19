@@ -1,7 +1,7 @@
 # import ShellScriptExecuter
 from Google_Sheet_API import GoogleSheetConnect
-import Google_Sheet_API
 
+from pprint import pprint
 import random
 import re
 
@@ -48,6 +48,12 @@ class UnitNode(Node):
                 return False
         else:
             return False
+
+    def to_dictionary(self):
+        unit_dic = {}
+        unit_dic.setdefault("unitNum", self.unitNum)
+        unit_dic.setdefault("unitName", "unit_"+str(self.unitNum))
+        return unit_dic
 
 
 class Vocab(Node):
@@ -96,6 +102,15 @@ class Vocab(Node):
 
     def getType(self):
         return "vocab"
+
+    def to_dictionary(self):
+        vocab_dic = {}
+        vocab_dic.setdefault("text", self.text)
+        vocab_dic.setdefault("definition", self.definition)
+        vocab_dic.setdefault("vocabRoot", self.vocabRoot)
+        vocab_dic.setdefault("errorCount", self.errorCount)
+        vocab_dic.setdefault("importancy", self.importancy)
+        return vocab_dic
 
 
 class VocabControler:
@@ -152,7 +167,45 @@ class VocabControler:
 
         return None
 
-        # text: the target vocab
+    # get all the vocabs in the unit
+    # returns a list of vocab
+
+    def getVocabListInUnit(self, unitNum):
+        curNode = self.getUnitNode(unitNum)
+        stopNode = self.getUnitNode(unitNum+1)
+        vocabList = []
+        if curNode:
+            while(curNode):
+                if(curNode.getType() == "unit"):
+                    if(curNode == stopNode):
+                        break
+                elif(curNode.getType() == "vocab"):
+                    vocabList.append(curNode)
+                curNode = curNode.getNext()
+            return vocabList
+        else:
+            return None
+
+    # return a list of all unit nodes
+    def getAllUnits(self):
+        curNode = self.firstVocab
+        allUnits = []
+        while(curNode):
+            if(curNode.getType() == "unit"):
+                allUnits.append(curNode.to_dictionary())
+            curNode = curNode.getNext()
+
+        return allUnits
+
+    def getAllVocabText(self):
+        curNode = self.firstVocab
+        allVocab = []
+        while(curNode):
+            if(curNode.getType() == "vocab"):
+                allVocab.append(curNode.getText())
+            curNode = curNode.getNext()
+        return allVocab
+    # text: the target vocab
 
     # def printVocabError(self, text):
     #     curNode = self.firstVocab
@@ -167,6 +220,13 @@ class VocabControler:
         curNode = self.firstVocab
         while(curNode):
             print(curNode)
+            curNode = curNode.getNext()
+
+    def printAllVocabDict(self):
+        curNode = self.firstVocab
+        while(curNode):
+            if (curNode.getType() != "unit"):
+                print(curNode.to_dictionary())
             curNode = curNode.getNext()
 
 
@@ -208,6 +268,12 @@ class TestQuestion:
     def getAns(self):
         return self.ans
 
+    def to_dictionary(self):
+        tq_dict = {}
+        tq_dict.setdefault("vocab", self.vocab.to_dictionary())
+        tq_dict.setdefault("options", self.options)
+        return tq_dict
+
 
 class TestQuestionCreator():
     def __init__(self, vocabControler, defPool):
@@ -241,7 +307,7 @@ class TestQuestionCreator():
         return options
 
 
-class TestingApp:
+class Test:
 
     # testQueue : a queue of TestQuestion object
     def __init__(self):
@@ -259,7 +325,9 @@ class TestingApp:
             while(userInput.upper() != 'Q'):
                 curTQ = self.testQueue.pop(0)
                 print("-----------------------------------")
+                print(userAnsCount+1, "/", self.testLength)
                 print(curTQ.getVocabTestFormat())
+                input("see options")
                 print(curTQ.getOptionsTestFormat())
                 userInput = input("Please enter your answer: ").upper()
                 # wrong ans
@@ -273,17 +341,18 @@ class TestingApp:
                     print("Correct" + "	\u2713")
                 userAnsCount += 1
             self.__printTestResult(userAnsCount)
+            self.resetTest()
         except IndexError:
             print("Finish Test")
             self.__printTestResult(userAnsCount)
+            self.resetTest()
 
     def seeQuestionAns(self, testQuestion):
-        userInput = input("Do you want to see the answer? (Y/N) ")
-        if (userInput.upper() == "Y"):
-            print(testQuestion.getVocabStr())
+        print(testQuestion.getVocabStr())
 
     def clearTestQueue(self):
         self.testQueue.clear()
+        self.testLength = 0
 
     def appendToTestQueue(self, testQuestion):
         self.testQueue.append(testQuestion)
@@ -311,6 +380,19 @@ class TestingApp:
     def resetTest(self):
         self.clearWrong()
         self.clearTestQueue()
+        self.testLength = 0
+
+    def getTestQueue(self):
+        return self.testQueue
+
+    def to_dictionary(self):
+        app_dic = {}
+        test_queue_dic = []
+        print(len(self.testQueue))
+        for i in range(len(self.testQueue)):
+            test_queue_dic.append(self.testQueue[i].to_dictionary())
+        app_dic.setdefault("testQueue", test_queue_dic)
+        return app_dic
 
 
 class FileParser:
@@ -470,9 +552,110 @@ def main():
 
     defPool = FP.getDefPool()
 
-    Test = TestingApp()
+    Test = Test()
 
     App(VC, defPool, Test)
+
+
+# def server_get_all_question(vocabControler, defPool, test):
+#     TQ_Creater = TestQuestionCreator(vocabControler, defPool)
+#     curNode = vocabControler.getFirstVocab()
+#     while(curNode):
+#         if(curNode.getType() == "vocab"):
+#             tq = TQ_Creater.create(curNode)
+#             test.appendToTestQueue(tq)
+#         curNode = curNode.getNext()
+#     pprint(test.to_dictionary())
+#     return test.to_dictionary()
+
+
+# def serverStart():
+#     FP = FileParser()
+#     # Initiate VocabControler
+#     VC = VocabControler()
+
+#     vocabHead = FP.parseFromCloud()
+
+#     VC.setFirstVocab(vocabHead)
+
+#     defPool = FP.getDefPool()
+
+#     Test = Test()
+
+#     all_testQ = server_get_all_question(VC, defPool, Test)
+
+#     return all_testQ
+
+
+# TODO: testing for making this file a class and created in Web_Server.py
+# fileParser,
+class Server():
+    def __init__(self, fileParser, vocabControler, defPool, test):
+        self.fileParser = fileParser
+        self.vocabControler = vocabControler
+        self.defPool = defPool
+        self.test = test
+
+        # initialize TestQuestionCreator object
+        self.TQ_Creator = TestQuestionCreator(
+            self.vocabControler, self.defPool)
+
+        # store the parsed item that might need to be used later
+        self.all_test_json = None
+
+        # parse all vocab from cloud
+        vocabHead = self.fileParser.parseFromCloud()
+        # assign head of the linked list
+        self.vocabControler.setFirstVocab(vocabHead)
+
+    def getAllUnits(self):
+        allUnit = self.vocabControler.getAllUnits()
+        for i in allUnit:
+            pprint(i)
+        return allUnit
+
+    def getAllTestQuestion(self):
+        if self.all_test_json == None:
+            curNode = self.vocabControler.getFirstVocab()
+            while(curNode):
+                if(curNode.getType() == "vocab"):
+                    tq = self.TQ_Creator.create(curNode)
+                    self.test.appendToTestQueue(tq)
+                curNode = curNode.getNext()
+            testDictionary = self.test.to_dictionary()
+            self.all_test_json = testDictionary
+            return self.all_test_json
+        else:
+            return self.all_test_json
+
+    def getTestQuestionByUnit(self, unitNum):
+        vocabInUnit = self.vocabControler.getVocabListInUnit(unitNum)
+        # clear the testQueue in test
+        self.test.clearTestQueue()
+        for i in vocabInUnit:
+            tq = self.TQ_Creator.create(i)
+            self.test.appendToTestQueue(tq)
+        test_json = self.test.to_dictionary()
+        return test_json
+
+    def getVocabText(self):
+        allVocabText = self.vocabControler.getAllVocabText()
+        return allVocabText
+
+    def getVocabByText(self, text):
+        return self.vocabControler.getVocabByText(text)
+
+    def getFileParser(self):
+        return self.fileParser
+
+    def getVocabControler(self):
+        return self.vocabControler
+
+    def getDefPool(self):
+        return self.defPool
+
+    def getTest(self):
+        return this.getTest
 
 
 if __name__ == '__main__':
