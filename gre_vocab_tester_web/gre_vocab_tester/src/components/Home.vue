@@ -7,6 +7,9 @@
       multiple choice questions.
     </p>
     <p>Feel free to playaround with <span>GRE Vocabulary Tester</span></p>
+    <p>Visit My GitHub repository for source code</p>
+    <a href="https://github.com/DavidLSC/GRE_Vocab_Tester">GitHub Repository</a>
+    <p></p>
   </div>
 </template>
 

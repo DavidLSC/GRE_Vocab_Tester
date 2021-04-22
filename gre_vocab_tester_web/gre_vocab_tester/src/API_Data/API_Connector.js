@@ -29,6 +29,11 @@ class API_Connector {
         return this.API_fetch(this.api_url + "/getVocabByText/" + vocabText);
     }
 
+    //TODO: create a really short test so we can test what happens when the test ended
+    testMethod() {
+        return this.API_fetch(this.api_url + "/test");
+    }
+
 }
 
 export default API_Connector;

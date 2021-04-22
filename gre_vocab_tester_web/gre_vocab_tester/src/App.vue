@@ -54,7 +54,7 @@ export default {
     };
   },
   created() {
-    const API = new API_Connector("http://localhost:5000");
+    const API = new API_Connector("http://127.0.0.1:5000");
     this.API = API;
   },
   methods: {

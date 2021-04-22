@@ -1,10 +1,16 @@
 <template>
   <div class="dictionary">
     <div class="searchPage" v-if="is_search_visible">
-      <span>Please enter a word</span>
-      <p>
-        <input v-model="userInput" placeholder="Enter the word here" />
-      </p>
+      <h3>Please enter a word</h3>
+      <input v-model="userInput" placeholder="Enter the word here" />
+      <span class="sortingOptions">
+        Sort By
+        <select v-model="sortingMode">
+          <option disabled value="">Sort Vocabularies By</option>
+          <option value="alphabetOrder">Alphabetical Order</option>
+          <option value="unitOrder">Unit</option>
+        </select>
+      </span>
       <div class="result">
         <span
           v-for="(vocab, index) in showedVocab"
@@ -45,6 +51,7 @@ export default {
   },
   data() {
     return {
+      sortingMode: "",
       userInput: null,
       allVocab: [],
       showedVocab: [],
@@ -71,6 +78,30 @@ export default {
         let match = this.allVocab[i].search(re);
         if (match != -1) {
           this.showedVocab.push(this.allVocab[i]);
+        }
+      }
+    },
+    sortingMode: function (mode) {
+      if (mode == "alphabetOrder") {
+        this.showedVocab = [];
+        let a = 97;
+        let alphbetMap = {};
+        for (let i = 0; i < 26; i++) {
+          alphbetMap[String.fromCharCode(a + i)] = [];
+          console.log(String.fromCharCode(a + i));
+        }
+        // allocate vocab by it's starting letter
+        for (let i = 0; i < this.allVocab.length; i++) {
+          let firstLetter = this.allVocab[i].charAt(0);
+          alphbetMap[firstLetter].push(this.allVocab[i]);
+        }
+
+        for (let i = 0; i < 26; i++) {
+          let vocabArr = alphbetMap[String.fromCharCode(a + i)];
+          this.sortVocab(vocabArr);
+          for (let j in vocabArr) {
+            this.showedVocab.push(vocabArr[j]);
+          }
         }
       }
     },
@@ -123,17 +154,28 @@ export default {
       this.is_vocab_page_visible = false;
       this.is_history_visible = true;
     },
+
+    sortVocab(vocabList) {
+      for (let i in vocabList) {
+        for (let j = 0; j < vocabList.length - i - 1; j++) {
+          try {
+            let result = vocabList[j].localeCompare(vocabList[j + 1]);
+            if (result == 1) {
+              let temp = vocabList[j];
+              vocabList[j] = vocabList[j + 1];
+              vocabList[j + 1] = temp;
+            }
+          } catch (err) {
+            console.log(err);
+          }
+        }
+      }
+    },
   },
 };
 </script>
 
 <style scoped>
-.dictionary input {
-  text-align: center;
-  width: 25%;
-  padding: 5px 0px 5px 0px;
-}
-
 .searchPage {
   display: flex;
   flex-direction: column;
@@ -149,6 +191,26 @@ export default {
   padding: 10px 10px 10px 10px;
 }
 
+.searchPage input {
+  text-align: center;
+  padding: 5px 0px 5px 0px;
+  margin: 1vh 0 1vh 0;
+  width: 25%;
+  align-self: center;
+}
+
+.sortingOptions {
+  align-self: flex-end;
+  right: 0%;
+  font-size: 15px;
+}
+
+.sortingOptions select {
+  right: auto;
+  padding: 3px 3px 3px 5px;
+  margin: 0 0 0 0;
+}
+
 .result {
   display: flex;
   flex-direction: column;
@@ -158,6 +220,7 @@ export default {
   width: 100%;
   border-radius: 10px;
   padding: 5px 5px 5px 5px;
+  margin: 1vh 0 2vh 0;
 }
 
 .historyPage {

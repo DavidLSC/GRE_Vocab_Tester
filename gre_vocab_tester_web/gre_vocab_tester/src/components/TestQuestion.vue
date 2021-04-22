@@ -7,15 +7,15 @@
     <span id="testQuestionReturn" v-on:click="returnButtonAction">
       &larr; Return</span
     >
-    <div v-if="text" class="testText">
+    <div v-if="is_testOptions_visible" class="testText">
       <span>{{ currentVocabId }}</span>
       <span>/</span>
       <span>{{ Object.keys(vocabMap).length }}</span>
-      <div class="test-options">
-        <label id="test-question-text" for="ans">
-          <h2>{{ vocabMap[currentVocabId].text }}</h2>
-        </label>
-        <p>
+      <label id="testQuestionText" for="ans">
+        <h2>{{ vocabMap[currentVocabId].text }}</h2>
+      </label>
+      <div class="testOptions">
+        <div>
           <input
             type="radio"
             name="ans"
@@ -55,7 +55,7 @@
           <label for="3"
             >{{ optionsMap[currentVocabId].option[3].split("*")[0] }}
           </label>
-        </p>
+        </div>
       </div>
 
       <div class="testAns" v-if="show_ans">
@@ -65,19 +65,23 @@
         </h4>
       </div>
       <div class="testButtons">
-        <span id="submit" v-on:click="submitButtonAction">
+        <span
+          id="submit"
+          v-on:click="submitButtonAction"
+          v-if="is_submitButton_visible"
+        >
           {{ submit_button_text }}
         </span>
-        <span id="result" v-on:click="resultButtonAction">See Result</span>
+        <span id="result" v-on:click="resultButtonAction">View Result</span>
       </div>
-
-      <div class="TestResult" v-if="show_test_result">
-        <ul>
-          <li v-for="vocab in wrongList" v-bind:key="vocab.id">
-            {{ vocabToString(vocab) }}
-          </li>
-        </ul>
-      </div>
+    </div>
+    <div class="TestResult" v-if="show_test_result">
+      <span>{{ resultButtonAction() }}</span>
+      <ul>
+        <li v-for="vocab in wrongList" v-bind:key="vocab.id">
+          {{ vocabToString(vocab) }}
+        </li>
+      </ul>
     </div>
   </div>
 </template>
@@ -133,15 +137,19 @@ export default {
       vocabMap: null,
       optionsMap: null,
       currentVocabId: 1,
+      isTestEnded: false,
       //submit button control
       submit_button_text: "Submit",
       ans_picked: null,
       question_result: "",
       wrongList: [],
       question_ans: "",
+      isQuestionAnswered: false,
       // visible controler
       show_ans: false,
       show_test_result: false,
+      is_testOptions_visible: true,
+      is_submitButton_visible: true,
     };
   },
   created() {
@@ -188,31 +196,51 @@ export default {
         let curVocab = this.vocabMap[this.currentVocabId];
         if (this.ans_picked == null) {
           alert("Please select an option before clicking 'Submit' ");
-        }
-        let selectedAns = curOpt[this.ans_picked];
-        //handle ans correctness
-        if (selectedAns.charAt(selectedAns.length - 1) == "*") {
-          this.question_result = "Correct";
         } else {
-          this.addToWrongList(curVocab);
-          this.question_result = "Wrong";
+          let selectedAns = curOpt[this.ans_picked];
+          //handle ans correctness
+          if (selectedAns.charAt(selectedAns.length - 1) == "*") {
+            this.question_result = "Correct";
+          } else {
+            this.addToWrongList(curVocab);
+            this.question_result = "Wrong";
+          }
+          this.question_ans = vocabToString(curVocab);
+          this.show_ans = true;
+          this.isQuestionAnswered = true;
+          if (this.currentVocabId + 1 > Object.keys(this.vocabMap).length) {
+            this.is_submitButton_visible = false;
+            this.testEndAction();
+          } else {
+            this.submit_button_text = "Next Question";
+          }
         }
-        this.question_ans = vocabToString(curVocab);
-        this.show_ans = true;
-        this.submit_button_text = "Next Question";
       } else if (this.submit_button_text == "Next Question") {
         this.currentVocabId += 1;
         this.show_ans = false;
         this.ans_picked = null;
+        this.isQuestionAnswered = false;
         this.submit_button_text = "Submit";
       }
     },
     resultButtonAction() {
       this.show_test_result = true;
-      let ansCount = this.currentVocabId;
+      this.is_testOptions_visible = false;
+      let ansCount = this.isQuestionAnswered
+        ? this.currentVocabId
+        : this.currentVocabId - 1;
       let correctCount = ansCount - this.wrongList.length;
       let total = Object.keys(this.vocabMap).length;
-      console.log(correctCount, "/", ansCount, " out of ", total);
+      let resultData =
+        "You have answered " +
+        ansCount.toString() +
+        " questions , with " +
+        +correctCount.toString() +
+        " correct." +
+        " This test has a total of " +
+        total.toString() +
+        " questions";
+      return resultData;
     },
     addToWrongList(vocab) {
       this.wrongList.push(vocab);
@@ -231,7 +259,17 @@ export default {
       return str;
     },
     returnButtonAction: function () {
-      this.$emit("return");
+      if (this.show_test_result && this.isTestEnded == false) {
+        this.show_test_result = false;
+        this.is_testOptions_visible = true;
+      } else {
+        this.$emit("return");
+      }
+    },
+    testEndAction: function () {
+      this.is_testOptions_visible = false;
+      this.isTestEnded = true;
+      this.resultButtonAction();
     },
   },
 };
@@ -275,5 +313,13 @@ export default {
 #submit:active,
 #result :active {
   background-color: #96989d;
+}
+
+.testOptions {
+  margin: 0 25% 0 25%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: left;
 }
 </style>

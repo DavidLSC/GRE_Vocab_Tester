@@ -9,6 +9,8 @@
       >
         {{ unit.unitName }}
       </span>
+      <!-- TODO: remove this when done testing -->
+      <span v-on:click="testMethod()">TESTING</span>
     </div>
     <div class="testQuestionPage" v-if="is_tq_visible">
       <TestQuestion
@@ -64,6 +66,12 @@ export default {
     showUnitSelection: function () {
       this.is_unit_selection_visible = true;
       this.is_tq_visible = false;
+    },
+    testMethod: function () {
+      this.selectedUnit = "TESTING";
+      let unitTestData = this.API.testMethod();
+      this.unitTestDataPromise = unitTestData;
+      this.hideUnitSelection();
     },
   },
 };
