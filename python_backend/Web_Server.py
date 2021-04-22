@@ -2,6 +2,8 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 # import json
 import vocab
+import VocabControler
+import FileParser
 
 app = Flask(__name__)
 
@@ -9,8 +11,8 @@ app = Flask(__name__)
 CORS(app)
 
 # initialize FileParser
-fileParser = vocab.FileParser()
-vocabControler = vocab.VocabControler()
+fileParser = FileParser.FileParser()
+vocabControler = VocabControler.VocabControler()
 defPool = fileParser.getDefPool()
 test = vocab.Test()
 
@@ -59,17 +61,11 @@ def get_vocab_by_text(vocab_text):
         return jsonify(data)
 
 
-@app.route('/test', methods=['GET'])
-def testing():
-    data = {
-        "options": ["a", "b", "h"],
-        "test": {
-            "name": "hi",
-            "id": 2
-        }
-    }
-
-    return jsonify(data)
+@app.route("/test")
+def test():
+    testVal = [{'vocab': {'text': 'fathom', 'definition': '理解', 'vocabRoot': '',
+                          'errorCount': '0', 'importancy': '5'}, 'options': ['危險的、背叛的、不可靠的', '揭露', '貧乏的']}]
+    return jsonify(testVal)
 
 
 if __name__ == '__main__':

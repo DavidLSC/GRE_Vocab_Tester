@@ -1,6 +1,9 @@
 # import ShellScriptExecuter
 from Google_Sheet_API import GoogleSheetConnect
 
+# import VocabControler
+import VocabControler
+
 from pprint import pprint
 import random
 import re
@@ -113,121 +116,121 @@ class Vocab(Node):
         return vocab_dic
 
 
-class VocabControler:
-    # firstVocab : root of the vocab Linked List
-    def __init__(self):
-        self.firstVocab = None
+# class VocabControler:
+#     # firstVocab : root of the vocab Linked List
+#     def __init__(self):
+#         self.firstVocab = None
 
-    def setFirstVocab(self, firstVocab):
-        self.firstVocab = firstVocab
+#     def setFirstVocab(self, firstVocab):
+#         self.firstVocab = firstVocab
 
-    def getFirstVocab(self):
-        return self.firstVocab
+#     def getFirstVocab(self):
+#         return self.firstVocab
 
-    def getVocabById(self, id):
-        curNode = self.firstVocab
-        while(curNode):
-            if(curNode.getType() != "vocab"):
-                curNode = curNode.getNext()
-            elif(curNode.getId() == id):
-                return curNode
-            else:
-                curNode = curNode.getNext()
-        return None
+#     def getVocabById(self, id):
+#         curNode = self.firstVocab
+#         while(curNode):
+#             if(curNode.getType() != "vocab"):
+#                 curNode = curNode.getNext()
+#             elif(curNode.getId() == id):
+#                 return curNode
+#             else:
+#                 curNode = curNode.getNext()
+#         return None
 
-    def getVocabByText(self, text):
-        curNode = self.firstVocab
-        while(curNode):
-            if (curNode.getType() == "vocab"):
-                if (curNode.getText() == text):
-                    return curNode
-            curNode = curNode.getNext()
+#     def getVocabByText(self, text):
+#         curNode = self.firstVocab
+#         while(curNode):
+#             if (curNode.getType() == "vocab"):
+#                 if (curNode.getText() == text):
+#                     return curNode
+#             curNode = curNode.getNext()
 
-        return None
+#         return None
 
-    def getVocabListLength(self, vocabOnly=False):
-        curNode = self.firstVocab
-        length = 0
-        while(curNode):
-            if (curNode.getType() == "vocab"):
-                length += 1
+#     def getVocabListLength(self, vocabOnly=False):
+#         curNode = self.firstVocab
+#         length = 0
+#         while(curNode):
+#             if (curNode.getType() == "vocab"):
+#                 length += 1
 
-            elif (not vocabOnly):
-                length += 1
-            curNode = curNode.getNext()
-        return length
+#             elif (not vocabOnly):
+#                 length += 1
+#             curNode = curNode.getNext()
+#         return length
 
-    def getUnitNode(self, unitNum):
-        curNode = self.firstVocab
-        while(curNode):
-            if(curNode.getType() == "unit"):
-                if(curNode.getUnitNum() == unitNum):
-                    return curNode
-            curNode = curNode.getNext()
+#     def getUnitNode(self, unitNum):
+#         curNode = self.firstVocab
+#         while(curNode):
+#             if(curNode.getType() == "unit"):
+#                 if(curNode.getUnitNum() == unitNum):
+#                     return curNode
+#             curNode = curNode.getNext()
 
-        return None
+#         return None
 
-    # get all the vocabs in the unit
-    # returns a list of vocab
+#     # get all the vocabs in the unit
+#     # returns a list of vocab
 
-    def getVocabListInUnit(self, unitNum):
-        curNode = self.getUnitNode(unitNum)
-        stopNode = self.getUnitNode(unitNum+1)
-        vocabList = []
-        if curNode:
-            while(curNode):
-                if(curNode.getType() == "unit"):
-                    if(curNode == stopNode):
-                        break
-                elif(curNode.getType() == "vocab"):
-                    vocabList.append(curNode)
-                curNode = curNode.getNext()
-            return vocabList
-        else:
-            return None
+#     def getVocabListInUnit(self, unitNum):
+#         curNode = self.getUnitNode(unitNum)
+#         stopNode = self.getUnitNode(unitNum+1)
+#         vocabList = []
+#         if curNode:
+#             while(curNode):
+#                 if(curNode.getType() == "unit"):
+#                     if(curNode == stopNode):
+#                         break
+#                 elif(curNode.getType() == "vocab"):
+#                     vocabList.append(curNode)
+#                 curNode = curNode.getNext()
+#             return vocabList
+#         else:
+#             return None
 
-    # return a list of all unit nodes
-    def getAllUnits(self):
-        curNode = self.firstVocab
-        allUnits = []
-        while(curNode):
-            if(curNode.getType() == "unit"):
-                allUnits.append(curNode.to_dictionary())
-            curNode = curNode.getNext()
+#     # return a list of all unit nodes
+#     def getAllUnits(self):
+#         curNode = self.firstVocab
+#         allUnits = []
+#         while(curNode):
+#             if(curNode.getType() == "unit"):
+#                 allUnits.append(curNode.to_dictionary())
+#             curNode = curNode.getNext()
 
-        return allUnits
+#         return allUnits
 
-    def getAllVocabText(self):
-        curNode = self.firstVocab
-        allVocab = []
-        while(curNode):
-            if(curNode.getType() == "vocab"):
-                allVocab.append(curNode.getText())
-            curNode = curNode.getNext()
-        return allVocab
-    # text: the target vocab
+#     def getAllVocabText(self):
+#         curNode = self.firstVocab
+#         allVocab = []
+#         while(curNode):
+#             if(curNode.getType() == "vocab"):
+#                 allVocab.append(curNode.getText())
+#             curNode = curNode.getNext()
+#         return allVocab
+#     # text: the target vocab
 
-    # def printVocabError(self, text):
-    #     curNode = self.firstVocab
-    #     while(curNode.getNext() != None):
-    #         if(curNode.__equal__(text)):
-    #             print(curNode.getErrorCount())
-    #             break
-    #         curNode = curNode.getNext()
-    #     print("No such vocab")
+#     # def printVocabError(self, text):
+#     #     curNode = self.firstVocab
+#     #     while(curNode.getNext() != None):
+#     #         if(curNode.__equal__(text)):
+#     #             print(curNode.getErrorCount())
+#     #             break
+#     #         curNode = curNode.getNext()
+#     #     print("No such vocab")
 
-    def printAllVocab(self):
-        curNode = self.firstVocab
-        while(curNode):
-            print(curNode)
-            curNode = curNode.getNext()
+#     def printAllVocab(self):
+#         curNode = self.firstVocab
+#         while(curNode):
+#             print(curNode)
+#             curNode = curNode.getNext()
 
-    def printAllVocabDict(self):
-        curNode = self.firstVocab
-        while(curNode):
-            if (curNode.getType() != "unit"):
-                print(curNode.to_dictionary())
-            curNode = curNode.getNext()
+#     def printAllVocabDict(self):
+#         curNode = self.firstVocab
+#         while(curNode):
+#             if (curNode.getType() != "unit"):
+#                 print(curNode.to_dictionary())
+#             curNode = curNode.getNext()
 
 
 class TestQuestion:
@@ -395,78 +398,78 @@ class Test:
         return app_dic
 
 
-class FileParser:
-    def __init__(self):
-        self.defPool = {}
+# class FileParser:
+#     def __init__(self):
+#         self.defPool = {}
 
-    # legacy Code Parse from local
-    def parseFromLocal(self, file):
-        f = open(file, "r")
-        vocabId = 0
-        prevNode = None
-        firstNode = None
-        for i in f:
-            line = i.split(",")
-            regexCheck = re.search(
-                "(Text)|(Unit_\d)|(^\s*$)", line[0])
+#     # legacy Code Parse from local
+#     def parseFromLocal(self, file):
+#         f = open(file, "r")
+#         vocabId = 0
+#         prevNode = None
+#         firstNode = None
+#         for i in f:
+#             line = i.split(",")
+#             regexCheck = re.search(
+#                 "(Text)|(Unit_\d)|(^\s*$)", line[0])
 
-            curNode = None
+#             curNode = None
 
-            if(regexCheck):
-                unitCheck = re.search("Unit_\d", line[0])
-                if (unitCheck):
-                    unitNum = unitCheck.string[5:]
-                    curNode = UnitNode(int(unitNum))
+#             if(regexCheck):
+#                 unitCheck = re.search("Unit_\d", line[0])
+#                 if (unitCheck):
+#                     unitNum = unitCheck.string[5:]
+#                     curNode = UnitNode(int(unitNum))
 
-            elif (not regexCheck):
-                curNode = Vocab(line[0], line[1], line[2],
-                                line[3], line[4].rstrip())
-                # give vocab an ID
-                curNode.setId(vocabId)
-                self.defPool.setdefault(vocabId, line[1])
-                vocabId += 1
-            if(curNode):
-                if(not prevNode):
-                    firstNode = curNode
-                else:
-                    curNode.setPrev(prevNode)
-                    prevNode.setNext(curNode)
-                prevNode = curNode
+#             elif (not regexCheck):
+#                 curNode = Vocab(line[0], line[1], line[2],
+#                                 line[3], line[4].rstrip())
+#                 # give vocab an ID
+#                 curNode.setId(vocabId)
+#                 self.defPool.setdefault(vocabId, line[1])
+#                 vocabId += 1
+#             if(curNode):
+#                 if(not prevNode):
+#                     firstNode = curNode
+#                 else:
+#                     curNode.setPrev(prevNode)
+#                     prevNode.setNext(curNode)
+#                 prevNode = curNode
 
-        return firstNode
+#         return firstNode
 
-    def parseFromCloud(self):
-        fetchedData = GoogleSheetConnect.fetchEverySheetData()
-        vocabId = 0
-        prevNode = None
-        firstNode = None
-        for i in fetchedData[1:]:
-            curNode = None
-            if(len(i) != 0):
-                unitCheck = re.search("Unit_\d", i[0])
-                if(unitCheck):
-                    unitNum = unitCheck.string[5:]
-                    curNode = UnitNode(int(unitNum))
-                else:
-                    while(len(i) < 5):
-                        i.append("")
-                    curNode = Vocab(i[0], i[1], i[2],
-                                    i[3], i[4])
-                    # give vocab an ID
-                    curNode.setId(vocabId)
-                    self.defPool.setdefault(vocabId, i[1])
-                    vocabId += 1
-                if(curNode):
-                    if(not prevNode):
-                        firstNode = curNode
-                    else:
-                        curNode.setPrev(prevNode)
-                        prevNode.setNext(curNode)
-                    prevNode = curNode
-        return firstNode
+#     def parseFromCloud(self):
+#         fetchedData = GoogleSheetConnect.fetchEverySheetData()
+#         vocabId = 0
+#         prevNode = None
+#         firstNode = None
+#         for i in fetchedData[1:]:
+#             curNode = None
+#             if(len(i) != 0):
+#                 unitCheck = re.search("Unit_\d", i[0])
+#                 if(unitCheck):
+#                     unitNum = unitCheck.string[5:]
+#                     curNode = UnitNode(int(unitNum))
+#                 else:
+#                     while(len(i) < 5):
+#                         i.append("")
+#                     curNode = Vocab(i[0], i[1], i[2],
+#                                     i[3], i[4])
+#                     # give vocab an ID
+#                     curNode.setId(vocabId)
+#                     self.defPool.setdefault(vocabId, i[1])
+#                     vocabId += 1
+#                 if(curNode):
+#                     if(not prevNode):
+#                         firstNode = curNode
+#                     else:
+#                         curNode.setPrev(prevNode)
+#                         prevNode.setNext(curNode)
+#                     prevNode = curNode
+#         return firstNode
 
-    def getDefPool(self):
-        return self.defPool
+#     def getDefPool(self):
+#         return self.defPool
 
 
 def App(vocabControler, defPool, test):
@@ -601,7 +604,7 @@ class Server():
             self.vocabControler, self.defPool)
 
         # store the parsed item that might need to be used later
-        self.all_test_json = None
+        self.cache_json = {"unitNum": None}
 
         # parse all vocab from cloud
         vocabHead = self.fileParser.parseFromCloud()
@@ -615,7 +618,9 @@ class Server():
         return allUnit
 
     def getAllTestQuestion(self):
-        if self.all_test_json == None:
+        if self.cache_json["unitNum"] == "all":
+            return self.cache_json["test"]
+        else:
             curNode = self.vocabControler.getFirstVocab()
             while(curNode):
                 if(curNode.getType() == "vocab"):
@@ -623,20 +628,24 @@ class Server():
                     self.test.appendToTestQueue(tq)
                 curNode = curNode.getNext()
             testDictionary = self.test.to_dictionary()
-            self.all_test_json = testDictionary
-            return self.all_test_json
-        else:
-            return self.all_test_json
+            self.cache_json["test"] = testDictionary
+            self.cache_json["unitNum"] = "all"
+            return self.cache_json["test"]
 
     def getTestQuestionByUnit(self, unitNum):
-        vocabInUnit = self.vocabControler.getVocabListInUnit(unitNum)
-        # clear the testQueue in test
-        self.test.clearTestQueue()
-        for i in vocabInUnit:
-            tq = self.TQ_Creator.create(i)
-            self.test.appendToTestQueue(tq)
-        test_json = self.test.to_dictionary()
-        return test_json
+        if self.cache_json["unitNum"] == unitNum:
+            return self.cache_json["test"]
+        else:
+            vocabInUnit = self.vocabControler.getVocabListInUnit(unitNum)
+            # clear the testQueue in test
+            self.test.clearTestQueue()
+            for i in vocabInUnit:
+                tq = self.TQ_Creator.create(i)
+                self.test.appendToTestQueue(tq)
+            test_json = self.test.to_dictionary()
+            self.cache_json["test"] = test_json
+            self.cache_json["unitNum"] = unitNum
+            return self.cache_json["test"]
 
     def getVocabText(self):
         allVocabText = self.vocabControler.getAllVocabText()

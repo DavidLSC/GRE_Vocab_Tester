@@ -1,0 +1,2 @@
+export FLASK_APP=Web_Server.py
+python3 -m flask run
