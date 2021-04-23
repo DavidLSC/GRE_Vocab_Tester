@@ -54,7 +54,7 @@ export default {
     };
   },
   created() {
-    const API = new API_Connector("http://127.0.0.1:5000");
+    const API = new API_Connector("https://gre-vocab-flask-app.herokuapp.com/");
     this.API = API;
   },
   methods: {

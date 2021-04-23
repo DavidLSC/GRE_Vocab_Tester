@@ -23,7 +23,9 @@
       <a id="viewSearchHistory" v-on:click="showHistoryPage()">View History</a>
     </div>
     <div class="historyPage" v-if="is_history_visible">
-      <a class="goBackButton" v-on:click="showSearchPage()">&larr; Go Back</a>
+      <a class="goBackButton" v-on:click="goBackButtonAction()"
+        >&larr; Go Back</a
+      >
       <h3>Search History</h3>
       <span
         v-for="{ word, id } in history.slice().reverse()"
@@ -34,7 +36,10 @@
       </span>
     </div>
     <div class="vocabPage" v-if="is_vocab_page_visible">
-      <a class="goBackButton" v-on:click="showSearchPage()">&larr; Go Back</a>
+      <a class="goBackButton" v-on:click="goBackButtonAction()"
+        >&larr; Go Back</a
+      >
+      <div v-if="vocabPageLoading">Loading...</div>
       <h1>{{ selectedVocab.text }}</h1>
       <span>[{{ selectedVocab.vocabRoot }}]</span>
       <span>{{ selectedVocab.definition }}</span>
@@ -52,14 +57,19 @@ export default {
   data() {
     return {
       sortingMode: "",
-      userInput: null,
+      userInput: "",
       allVocab: [],
       showedVocab: [],
+      sortedVocab: [],
       history: [],
       selectedVocab: {},
+      //visiblity control
       is_search_visible: true,
       is_vocab_page_visible: false,
       is_history_visible: false,
+      go_back_parent: null,
+
+      vocabPageLoading: false,
     };
   },
   created() {
@@ -72,14 +82,7 @@ export default {
   },
   watch: {
     userInput: function (input) {
-      this.showedVocab = [];
-      let re = RegExp("^" + input, "g");
-      for (let i = 0; i < this.allVocab.length; i++) {
-        let match = this.allVocab[i].search(re);
-        if (match != -1) {
-          this.showedVocab.push(this.allVocab[i]);
-        }
-      }
+      this.userInputAction(input);
     },
     sortingMode: function (mode) {
       if (mode == "alphabetOrder") {
@@ -88,22 +91,29 @@ export default {
         let alphbetMap = {};
         for (let i = 0; i < 26; i++) {
           alphbetMap[String.fromCharCode(a + i)] = [];
-          console.log(String.fromCharCode(a + i));
         }
         // allocate vocab by it's starting letter
         for (let i = 0; i < this.allVocab.length; i++) {
           let firstLetter = this.allVocab[i].charAt(0);
           alphbetMap[firstLetter].push(this.allVocab[i]);
         }
-
+        this.sortedVocab = [];
         for (let i = 0; i < 26; i++) {
           let vocabArr = alphbetMap[String.fromCharCode(a + i)];
           this.sortVocab(vocabArr);
           for (let j in vocabArr) {
             this.showedVocab.push(vocabArr[j]);
+            this.sortedVocab.push(vocabArr[j]);
           }
         }
+      } else if (mode == "unitOrder") {
+        this.showedVocab = [];
+        for (let i in this.allVocab) {
+          this.showedVocab.push(this.allVocab[i]);
+        }
       }
+      // invoke the search action after sorting
+      this.userInputAction(this.userInput);
     },
   },
   methods: {
@@ -131,18 +141,29 @@ export default {
       this.is_search_visible = false;
       this.is_history_visible = false;
       this.is_vocab_page_visible = true;
+      this.selectedVocab = {};
+      this.vocabPageLoading = true;
       this.API.getVocabByText(vocab)
         .then((resp) => resp.json())
         .then((json) => {
           if (json.status == "ok") {
+            this.vocabPageLoading = false;
             this.selectedVocab = json;
             !isHistory ? this.addToHistory(vocab) : {};
+            this.go_back_parent = isHistory ? "historyPage" : "searchPage";
           } else {
             //TODO: alert for now, planning to add an error message displayer
             alert(json.message);
           }
-          console.log(this.selectedVocab);
         });
+    },
+    goBackButtonAction: function () {
+      console.log(this.go_back_parent);
+      if (this.go_back_parent == "historyPage") {
+        this.showHistoryPage();
+      } else if (this.go_back_parent == "searchPage") {
+        this.showSearchPage();
+      }
     },
     showSearchPage: function () {
       this.is_search_visible = true;
@@ -153,9 +174,10 @@ export default {
       this.is_search_visible = false;
       this.is_vocab_page_visible = false;
       this.is_history_visible = true;
+      this.go_back_parent = "searchPage";
     },
 
-    sortVocab(vocabList) {
+    sortVocab: function (vocabList) {
       for (let i in vocabList) {
         for (let j = 0; j < vocabList.length - i - 1; j++) {
           try {
@@ -167,6 +189,27 @@ export default {
             }
           } catch (err) {
             console.log(err);
+          }
+        }
+      }
+    },
+
+    //TODO: if input include none letter word need to handle it
+    userInputAction: function (input) {
+      this.showedVocab = [];
+      let re = RegExp("^" + input, "g");
+      if (this.sortingMode == "alphabetOrder") {
+        for (let i = 0; i < this.sortedVocab.length; i++) {
+          let match = this.sortedVocab[i].search(re);
+          if (match != -1) {
+            this.showedVocab.push(this.sortedVocab[i]);
+          }
+        }
+      } else {
+        for (let i = 0; i < this.allVocab.length; i++) {
+          let match = this.allVocab[i].search(re);
+          if (match != -1) {
+            this.showedVocab.push(this.allVocab[i]);
           }
         }
       }
