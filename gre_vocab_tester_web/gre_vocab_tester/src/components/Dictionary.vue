@@ -30,27 +30,28 @@
       <span
         v-for="{ word, id } in history.slice().reverse()"
         v-bind:key="id"
-        v-on:click="showVocab(word, true)"
+        v-on:click="showVocab(word)"
       >
         {{ word }}
       </span>
     </div>
-    <div class="vocabPage" v-if="is_vocab_page_visible">
-      <a class="goBackButton" v-on:click="goBackButtonAction()"
-        >&larr; Go Back</a
-      >
-      <div v-if="vocabPageLoading">Loading...</div>
-      <h1>{{ selectedVocab.text }}</h1>
-      <span>[{{ selectedVocab.vocabRoot }}]</span>
-      <span>{{ selectedVocab.definition }}</span>
-      <span>Importancy: {{ selectedVocab.importancy }}</span>
+    <div v-if="is_vocab_page_visible">
+      <VocabPage
+        v-bind:vocabDataPromise="vocabPageData"
+        v-on:goBack="goBackButtonAction()"
+      ></VocabPage>
     </div>
   </div>
 </template>
 
 <script>
+import VocabPage from "./VocabPage";
+
 export default {
   name: "Dictionary",
+  components: {
+    VocabPage,
+  },
   props: {
     API: Object,
   },
@@ -69,7 +70,8 @@ export default {
       is_history_visible: false,
       go_back_parent: null,
 
-      vocabPageLoading: false,
+      //vocabPageData
+      vocabPageData: null,
     };
   },
   created() {
@@ -117,17 +119,6 @@ export default {
     },
   },
   methods: {
-    //TODO: search dynamically by each letter user type in
-    // have a list of vocab and use regular expression to look for the target
-    searchWord: function () {
-      if (this.userInput == null || this.userInput == "") {
-        alert("Please enter a word before searching.");
-      } else {
-        console.log(this.userInput);
-        this.addToHistory(this.userInput);
-        console.log(this.history);
-      }
-    },
     addToHistory: function (word) {
       this.history.push({ word: word, id: null });
       if (this.history.length > 5) {
@@ -137,25 +128,17 @@ export default {
         this.history[i].id = i;
       }
     },
-    showVocab: function (vocab, isHistory = false) {
+    showVocab: function (vocabText) {
+      if (this.is_history_visible) {
+        this.go_back_parent = "historyPage";
+      } else {
+        this.go_back_parent = "searchPage";
+        this.addToHistory(vocabText);
+      }
       this.is_search_visible = false;
       this.is_history_visible = false;
       this.is_vocab_page_visible = true;
-      this.selectedVocab = {};
-      this.vocabPageLoading = true;
-      this.API.getVocabByText(vocab)
-        .then((resp) => resp.json())
-        .then((json) => {
-          if (json.status == "ok") {
-            this.vocabPageLoading = false;
-            this.selectedVocab = json;
-            !isHistory ? this.addToHistory(vocab) : {};
-            this.go_back_parent = isHistory ? "historyPage" : "searchPage";
-          } else {
-            //TODO: alert for now, planning to add an error message displayer
-            alert(json.message);
-          }
-        });
+      this.vocabPageData = this.API.getVocabByText(vocabText);
     },
     goBackButtonAction: function () {
       console.log(this.go_back_parent);
@@ -238,8 +221,10 @@ export default {
   text-align: center;
   padding: 5px 0px 5px 0px;
   margin: 1vh 0 1vh 0;
-  width: 25%;
-  align-self: center;
+  /* width: 25%; */
+  align-self: stretch;
+  border-radius: 5px;
+  font-size: 18px;
 }
 
 .sortingOptions {
@@ -252,6 +237,7 @@ export default {
   right: auto;
   padding: 3px 3px 3px 5px;
   margin: 0 0 0 0;
+  border-radius: 5px;
 }
 
 .result {

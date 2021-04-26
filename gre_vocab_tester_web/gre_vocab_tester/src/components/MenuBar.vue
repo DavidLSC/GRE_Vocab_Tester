@@ -6,6 +6,7 @@
       <a id="dictionary-menu-button" v-on:click="$emit('showDict')"
         >Dictionary</a
       >
+      <a id="login">Login</a>
     </span>
   </div>
 </template>
@@ -57,5 +58,9 @@ export default {
 
 .menu-bar a:hover {
   background-color: #ddd;
+}
+
+#login {
+  float: right;
 }
 </style>

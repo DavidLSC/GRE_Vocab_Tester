@@ -4,13 +4,11 @@
     <div v-if="error" class="error">
       {{ error }}
     </div>
-    <span id="testQuestionReturn" v-on:click="returnButtonAction">
-      &larr; Return</span
-    >
     <div v-if="is_testOptions_visible" class="testText">
-      <span>{{ currentVocabId }}</span>
-      <span>/</span>
-      <span>{{ Object.keys(vocabMap).length }}</span>
+      <a class="goBackButton" v-on:click="returnButtonAction">
+        &larr; Go Back</a
+      >
+      <span>{{ currentVocabId + "/" + Object.keys(vocabMap).length }}</span>
       <label id="testQuestionText" for="ans">
         <h2>{{ vocabMap[currentVocabId].text }}</h2>
       </label>
@@ -59,7 +57,9 @@
       </div>
 
       <div class="testAns" v-if="show_ans">
-        <p class="question-result">{{ question_result }}</p>
+        <p class="questionResult" v-bind:style="questionResultStyle">
+          {{ question_result }}
+        </p>
         <h4>
           {{ question_ans }}
         </h4>
@@ -72,21 +72,32 @@
         >
           {{ submit_button_text }}
         </span>
-        <span id="result" v-on:click="resultButtonAction">View Result</span>
+        <span id="result" v-on:click="showTestResult()">View Result</span>
       </div>
     </div>
-    <div class="TestResult" v-if="show_test_result">
-      <span>{{ resultButtonAction() }}</span>
-      <ul>
-        <li v-for="vocab in wrongList" v-bind:key="vocab.id">
-          {{ vocabToString(vocab) }}
-        </li>
-      </ul>
+    <div class="testResult" v-if="show_test_result">
+      <a class="goBackButton" v-on:click="returnButtonAction">&larr; Go Back</a>
+      <p class="resultSummary">{{ showTestResult() }}</p>
+      <span
+        v-for="vocab in wrongList"
+        v-bind:key="vocab.id"
+        v-on:click="showVocabPage(vocab)"
+      >
+        {{ vocab.text }}
+      </span>
+    </div>
+    <div v-if="is_vocab_page_visible">
+      <VocabPage
+        v-bind:vocabData="vocabData"
+        v-on:goBack="goBackButtonAction"
+      ></VocabPage>
     </div>
   </div>
 </template>
 
 <script>
+import VocabPage from "./VocabPage";
+
 //TODO: this is a code copied from : https://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array
 function shuffle(array) {
   var currentIndex = array.length,
@@ -123,6 +134,9 @@ function vocabToString(vocab) {
 
 export default {
   name: "TestQuestion",
+  components: {
+    VocabPage,
+  },
   props: {
     unit: Number,
     api_fetched_data: Promise,
@@ -148,18 +162,26 @@ export default {
       // visible controler
       show_ans: false,
       show_test_result: false,
-      is_testOptions_visible: true,
+      is_testOptions_visible: false,
       is_submitButton_visible: true,
+      is_vocab_page_visible: false,
+      //vocabPage Data properties
+      vocabData: {},
+      //dynamic style object
+      questionResultStyle: { color: "" },
     };
   },
   created() {
     // fetch the data when the view is created and the data is
     // already being observed
     this.loading = true;
+    this.is_testOptions_visible = false;
     this.api_fetched_data
       .then((resp) => resp.json())
       .then((json) => {
         this.createQuestions(json);
+        this.loading = false;
+        this.is_testOptions_visible = true;
       });
   },
   //   watch: {
@@ -169,7 +191,6 @@ export default {
   methods: {
     createQuestions(jsonData) {
       this.error = this.text = this.def = null;
-      this.loading = false;
       this.text = jsonData[0].vocab.text;
       this.def = jsonData[0].vocab.definition;
       this.vocab = jsonData[0].vocab.text;
@@ -201,9 +222,11 @@ export default {
           //handle ans correctness
           if (selectedAns.charAt(selectedAns.length - 1) == "*") {
             this.question_result = "Correct";
+            this.questionResultStyle.color = "green";
           } else {
             this.addToWrongList(curVocab);
             this.question_result = "Wrong";
+            this.questionResultStyle.color = "red";
           }
           this.question_ans = vocabToString(curVocab);
           this.show_ans = true;
@@ -223,7 +246,7 @@ export default {
         this.submit_button_text = "Submit";
       }
     },
-    resultButtonAction() {
+    showTestResult() {
       this.show_test_result = true;
       this.is_testOptions_visible = false;
       let ansCount = this.isQuestionAnswered
@@ -269,7 +292,17 @@ export default {
     testEndAction: function () {
       this.is_testOptions_visible = false;
       this.isTestEnded = true;
-      this.resultButtonAction();
+      this.showTestResult();
+    },
+    // click the vocab from the wrong list
+    showVocabPage: function (vocab) {
+      this.vocabData = vocab;
+      this.is_vocab_page_visible = true;
+      this.show_test_result = false;
+    },
+    goBackButtonAction: function () {
+      this.is_vocab_page_visible = false;
+      this.show_test_result = true;
     },
   },
 };
@@ -282,37 +315,14 @@ export default {
   justify-content: flex-start;
 }
 
-.testButtons {
+.loading {
+  font-size: 30px;
+}
+
+.testText {
   display: flex;
-  flex-direction: row-reverse;
-  justify-content: space-evenly;
-}
-
-#testQuestionReturn {
-  width: 100px;
-}
-
-#testQuestionReturn,
-#submit,
-#result {
-  width: 50;
-  padding: 10px 10px 10px 10px;
-  border-style: none;
-  background-color: #c1c4ca;
-  border-radius: 10px;
-  color: black;
-}
-
-#testQuestionReturn:hover,
-#submit:hover,
-#result:hover {
-  background-color: #acaeb4;
-}
-
-#testQuestionReturn:active,
-#submit:active,
-#result :active {
-  background-color: #96989d;
+  flex-direction: column;
+  justify-content: flex-start;
 }
 
 .testOptions {
@@ -321,5 +331,68 @@ export default {
   flex-direction: column;
   align-items: center;
   text-align: left;
+}
+
+.questionResult {
+  color: green;
+}
+
+.testButtons {
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: space-evenly;
+  margin: 2vh 0 0 0;
+}
+
+.goBackButton {
+  align-self: flex-start;
+}
+
+.goBackButton,
+#submit,
+#result {
+  width: 50;
+  padding: 8px 10px 8px 10px;
+  border-style: none;
+  background-color: #c1c4ca;
+  border-radius: 10px;
+  color: black;
+}
+
+.goBackButton:hover,
+#submit:hover,
+#result:hover {
+  background-color: #acaeb4;
+}
+
+.goBackButton:active,
+#submit:active,
+#result :active {
+  background-color: #96989d;
+}
+
+.testResult {
+  display: flex;
+  flex-direction: column;
+}
+
+.resultSummary {
+  font-size: 24px;
+}
+
+.testResult span:not(.resultSummary) {
+  padding: 1px 0 1px 0;
+  border-style: none;
+  border-radius: 10px;
+  background-color: #c1c4ca;
+  margin: 5px 0 0 0;
+}
+
+.testResult span:not(.resultSummary):hover {
+  background-color: #acaeb4;
+}
+
+.testResult span:not(.resultSummary):active {
+  background-color: #96989d;
 }
 </style>
