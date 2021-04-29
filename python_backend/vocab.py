@@ -72,8 +72,11 @@ class Vocab(Node):
         # ID is for better use
         self.id = None
 
-    def addErrorCount(self):
-        self.errorCount += 1
+    def addErrorCount(self, number=None):
+        if number:
+            self.errorCount += number
+        else:
+            self.errorCount += 1
 
     def getErrorCount(self):
         return self.errorCount
@@ -98,10 +101,10 @@ class Vocab(Node):
         return str
 
     def __str__(self):
-        str = self.text + " : " + self.definition + \
+        toString = self.text + " : " + self.definition + \
             " [ " + self.vocabRoot + " ]   Wrong : " + \
-            self.errorCount + " Importantcy : " + self.importancy
-        return str
+            str(self.errorCount) + " Importantcy : " + self.importancy
+        return toString
 
     def getType(self):
         return "vocab"
@@ -593,11 +596,15 @@ def main():
 # TODO: testing for making this file a class and created in Web_Server.py
 # fileParser,
 class Server():
-    def __init__(self, fileParser, vocabControler, defPool, test):
+    def __init__(self, fileParser, vocabControler, defPool, test, userControler):
         self.fileParser = fileParser
         self.vocabControler = vocabControler
         self.defPool = defPool
         self.test = test
+
+        # TODO: still testing userControler
+        self.userControler = userControler
+        self.userControler.testPopulate()
 
         # initialize TestQuestionCreator object
         self.TQ_Creator = TestQuestionCreator(
@@ -664,7 +671,10 @@ class Server():
         return self.defPool
 
     def getTest(self):
-        return this.getTest
+        return self.getTest
+
+    def getUserControler(self):
+        return self.userControler
 
 
 if __name__ == '__main__':

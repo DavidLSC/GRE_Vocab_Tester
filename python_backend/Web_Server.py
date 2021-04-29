@@ -4,6 +4,7 @@ from flask_cors import CORS
 import vocab
 import VocabControler
 import FileParser
+from User import UserControler
 
 app = Flask(__name__)
 
@@ -16,8 +17,17 @@ vocabControler = VocabControler.VocabControler()
 defPool = fileParser.getDefPool()
 test = vocab.Test()
 
+# TODO: still testing usercontroler function
+userControler = UserControler.UserController()
+
 # initialize server object
-Server = vocab.Server(fileParser, vocabControler, defPool, test)
+Server = vocab.Server(fileParser, vocabControler, defPool, test, userControler)
+
+# TODO: make a standard return json Object
+# {
+# status: ok/error
+# message:
+# }
 
 
 @app.route('/', methods=['GET'])
@@ -59,6 +69,80 @@ def get_vocab_by_text(vocab_text):
         data = targetVocab.to_dictionary()
         data["status"] = "ok"
         return jsonify(data)
+
+
+# addErrorCount request data
+# {
+#     "text": vocab_text,
+#     "errorCount" : error_number_needed_to_be_added
+# }
+@app.route('/addErrorCount', methods=['POST'])
+def addErrorCount():
+    jsonData = request.get_json(force=True)
+    targetVocab = Server.getVocabByText(jsonData["text"])
+    if(targetVocab):
+        targetVocab.addErrorCount(int(jsonData["errorCount"]))
+        print(targetVocab, jsonData)
+        json = {
+            "status": "ok",
+            "message": targetVocab.getText() + "'s error number is" + str(targetVocab.getErrorCount())
+        }
+        return jsonify(json)
+    else:
+        return jsonify({
+            "status": "error",
+            "message": "can't find vocab " + jsonData["text"]
+        })
+
+# addSampleSentence request data
+# {
+#     "text": vocab_text,
+#     "sentence" : sample_sentence
+# }
+
+
+@app.route("/addSampleSentence", methods=["POST"])
+def addSampleSentence():
+    jsonData = request.get_json(force=True)
+    targetVocab = Server.getVocabByText(jsonData["text"])
+    if(targetVocab):
+        # TODO: sample sentence
+        print(jsonData["sentence"])
+        return jsonify({
+            "status": "ok",
+            "message": targetVocab.getText() + " add new sample sentence"
+        })
+    else:
+        return jsonify({
+            "status": "error",
+            "message": "can't find vocab " + jsonData["text"]
+        })
+
+
+# addSampleSentence request data
+# {
+#     "text": vocab_text,
+#     "userName" : userName,
+#     "userID" : userID
+# }
+@app.route("/addToPersonalList", methods=["POST"])
+def addToPersonalList():
+    jsonData = request.get_json(force=True)
+    # TODO: create userFile.py and add the vocabID to the list
+    print(jsonData["text"], jsonData["userID"], jsonData["userName"])
+    userControler = Server.getUserControler()
+    auth = userControler.authenticate(
+        id=jsonData["userID"], name=jsonData["userName"])
+    if(auth):
+        return jsonify({
+            "status": "ok",
+            "message": jsonData["text"] + " has been added to your list"
+        })
+    else:
+        return jsonify({
+            "status": "error",
+            "message": "authentication error"
+        })
 
 
 @app.route("/test")

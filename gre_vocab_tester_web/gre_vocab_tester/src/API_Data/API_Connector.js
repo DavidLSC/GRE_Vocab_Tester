@@ -4,8 +4,11 @@ class API_Connector {
     }
 
 
-    API_fetch(url) {
-        let resp = fetch(url);
+    API_fetch(url, method = "GET", data = null) {
+        let resp = fetch(url, {
+            method: method,
+            body: JSON.stringify(data)
+        });
         return resp;
     }
 
@@ -27,6 +30,24 @@ class API_Connector {
 
     getVocabByText(vocabText) {
         return this.API_fetch(this.api_url + "/getVocabByText/" + vocabText);
+    }
+
+    //addErrorCount request data
+    //{
+    //  "text": vocab_text,
+    //  "errorCount" : error_number_needed_to_be_added
+    //}
+    addErrorCount(jsonData) {
+        return this.API_fetch(this.api_url + "/addErrorCount/", method = "POST", data = jsonData);
+    }
+
+    //addSampleSentence request data
+    //{
+    //  "text": vocab_text,
+    //  "sentence" : sample sentence
+    //}
+    addSampleSentence(jsonData) {
+        return this.API_fetch(this.api_url + "/addSampleSentence/", method = "POST", data = jsonData);
     }
 
     //TODO: create a really short test so we can test what happens when the test ended

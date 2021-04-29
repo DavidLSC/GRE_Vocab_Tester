@@ -62,8 +62,13 @@ class FileParser:
                 else:
                     while(len(i) < 5):
                         i.append("")
-                    curNode = vocab.Vocab(i[0], i[1], i[2],
-                                          i[3], i[4])
+                    text = i[0]
+                    definition = i[1]
+                    root = i[2]
+                    errorCount = int(i[3])
+                    importancy = i[4]
+                    curNode = vocab.Vocab(text, definition, root,
+                                          errorCount, importancy)
                     # give vocab an ID
                     curNode.setId(vocabId)
                     self.defPool.setdefault(vocabId, i[1])
