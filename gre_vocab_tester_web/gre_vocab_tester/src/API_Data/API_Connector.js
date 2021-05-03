@@ -5,10 +5,14 @@ class API_Connector {
 
 
     API_fetch(url, method = "GET", data = null) {
-        let resp = fetch(url, {
-            method: method,
-            body: JSON.stringify(data)
-        });
+        let fetchAttr = method == "GET" ? {
+            "method": method
+        } : {
+            "method": method,
+            "body": JSON.stringify(data)
+        }
+        console.log(fetchAttr)
+        let resp = fetch(url, fetchAttr);
         return resp;
     }
 
@@ -38,7 +42,7 @@ class API_Connector {
     //  "errorCount" : error_number_needed_to_be_added
     //}
     addErrorCount(jsonData) {
-        return this.API_fetch(this.api_url + "/addErrorCount/", method = "POST", data = jsonData);
+        return this.API_fetch(this.api_url + "/addErrorCount/", "POST", jsonData);
     }
 
     //addSampleSentence request data
@@ -47,7 +51,28 @@ class API_Connector {
     //  "sentence" : sample sentence
     //}
     addSampleSentence(jsonData) {
-        return this.API_fetch(this.api_url + "/addSampleSentence/", method = "POST", data = jsonData);
+        return this.API_fetch(this.api_url + "/addSampleSentence/", "POST", jsonData);
+    }
+
+    /**
+     * login request data
+     * {
+     *      "username":
+     *      "password":
+     * }
+     */
+    login(jsonData) {
+        return this.API_fetch(this.api_url + "/login", "POST", jsonData)
+    }
+
+    /**
+     * getUserInfo request data
+     * {
+     *      "username":
+     * }
+     */
+    getUserInfo(jsonData) {
+        return this.API_fetch(this.api_url + "/getUserInfo", "POST", jsonData)
     }
 
     //TODO: create a really short test so we can test what happens when the test ended

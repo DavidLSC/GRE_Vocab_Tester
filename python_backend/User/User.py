@@ -31,6 +31,18 @@ class User():
     def isAdmin(self):
         return self.isAdmin
 
+    def getData(self):
+        return {"isAdmin": self.isAdmin, "userFile": self.userFile}
+
+    def to_dictionary(self):
+        json = {}
+        json.setdefault("username", self.userName)
+        json.setdefault("userId", self.userId)
+        json.setdefault("email", self.email)
+        json.setdefault("userFile", self.userFile)
+        json.setdefault("isAdmin", self.isAdmin)
+        return json
+
     def __str__(self):
         return self.userId + "\n" + self.userName + "\n" + self.password + "\n" + self.email
 

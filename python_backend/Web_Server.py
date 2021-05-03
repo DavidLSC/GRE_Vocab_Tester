@@ -118,6 +118,38 @@ def addSampleSentence():
             "message": "can't find vocab " + jsonData["text"]
         })
 
+# login request data
+# {
+#       "userName": username
+#       "password": password
+# }
+
+
+@app.route("/login", methods=["POST"])
+def login():
+    jsonData = request.get_json(force=True)
+    userName = jsonData["username"]
+    password = jsonData["password"]
+    userControler = Server.getUserControler()
+    targetUser = userControler.getUserByName(userName)
+    if(targetUser):
+        if(targetUser.checkPassword(password)):
+            return jsonify({
+                "status": "ok",
+                "message": "Welcome " + userName,
+                "userData": targetUser.getData()
+            })
+        else:
+            return jsonify({
+                "status": "error",
+                "message": "Username or Password is in correct, please check if you type in the correct value"
+            })
+    else:
+        return jsonify({
+            "status": "error",
+            "message": "Username or Password is in correct, please check if you type in the correct value"
+        })
+
 
 # addSampleSentence request data
 # {
@@ -142,6 +174,27 @@ def addToPersonalList():
         return jsonify({
             "status": "error",
             "message": "authentication error"
+        })
+
+
+@app.route("/getUserInfo", methods=["POST"])
+def getUserInfo():
+    #{username: String}
+    jsonData = request.get_json(force=True)
+    print(jsonData)
+    userControler = Server.getUserControler()
+    target = userControler.getUserByName(jsonData["username"])
+    if target:
+        data = target.to_dictionary()
+        return jsonify({
+            "status": "ok",
+            "data": data,
+            "message": "user " + jsonData["username"] + ' exist'
+        })
+    else:
+        return jsonify({
+            "status": "error",
+            "message": "user don't exist"
         })
 
 

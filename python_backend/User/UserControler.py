@@ -52,5 +52,5 @@ class UserController():
             userData = i.split(",")
             if(len(userData) == 4):
                 user = User.User(
-                    userId=userData[0], userName=userData[1], password=userData[2], email=userData[3])
+                    userId=userData[0], userName=userData[1], password=userData[2], email=userData[3].rstrip())
                 self.addUser(user)
