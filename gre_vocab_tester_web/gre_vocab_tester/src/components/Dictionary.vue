@@ -12,6 +12,10 @@
         </select>
       </span>
       <div class="result">
+        <div v-if="isLoading">
+          <p>Loading</p>
+          <i class="fas fa-spinner fa-spin"></i>
+        </div>
         <span
           v-for="(vocab, index) in showedVocab"
           v-bind:key="index"
@@ -23,9 +27,10 @@
       <a id="viewSearchHistory" v-on:click="showHistoryPage()">View History</a>
     </div>
     <div class="historyPage" v-if="is_history_visible">
-      <a class="goBackButton" v-on:click="goBackButtonAction()"
-        >&larr; Go Back</a
-      >
+      <a class="goBackButton" v-on:click="goBackButtonAction()">
+        <i class="fas fa-arrow-left"></i>
+        Go Back
+      </a>
       <h3>Search History</h3>
       <span
         v-for="{ word, id } in history.slice().reverse()"
@@ -39,6 +44,8 @@
       <VocabPage
         v-bind:vocabDataPromise="vocabPageData"
         v-on:goBack="goBackButtonAction()"
+        v-on:modifyPersonalList="modifyPersonalList($event)"
+        ref="vocabPage"
       ></VocabPage>
     </div>
   </div>
@@ -54,6 +61,7 @@ export default {
   },
   props: {
     API: Object,
+    login_user_data: Object,
   },
   data() {
     return {
@@ -69,15 +77,18 @@ export default {
       is_vocab_page_visible: false,
       is_history_visible: false,
       go_back_parent: null,
+      isLoading: false,
 
       //vocabPageData
       vocabPageData: null,
     };
   },
   created() {
+    this.isLoading = true;
     this.API.getAllVocabText()
       .then((resp) => resp.json())
       .then((json) => {
+        this.isLoading = false;
         this.allVocab = json;
         this.showedVocab = json;
       });
@@ -195,6 +206,28 @@ export default {
             this.showedVocab.push(this.allVocab[i]);
           }
         }
+      }
+    },
+
+    modifyPersonalList: function (value) {
+      console.log(this.login_user_data, value);
+      if (this.login_user_data) {
+        let jsonData = {
+          username: this.login_user_data.username,
+          userId: this.login_user_data.userId,
+          text: value.text,
+          add: value.add,
+        };
+        this.API.addToPersonalList(jsonData)
+          .then((resp) => resp.json())
+          .then((json) => {
+            console.log(json.message);
+          });
+      } else {
+        this.$refs.vocabPage.changeIsInList(false);
+        alert(
+          "Please login before adding this vocabulary to your personal list"
+        );
       }
     },
   },

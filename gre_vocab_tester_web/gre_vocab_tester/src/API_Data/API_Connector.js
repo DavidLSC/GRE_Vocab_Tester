@@ -75,6 +75,10 @@ class API_Connector {
         return this.API_fetch(this.api_url + "/getUserInfo", "POST", jsonData)
     }
 
+    addToPersonalList(jsonData) {
+        return this.API_fetch(this.api_url + "/ModifyPersonalList", "POST", jsonData)
+    }
+
     //TODO: create a really short test so we can test what happens when the test ended
     testMethod() {
         return this.API_fetch(this.api_url + "/test");

@@ -137,7 +137,8 @@ def login():
             return jsonify({
                 "status": "ok",
                 "message": "Welcome " + userName,
-                "userData": targetUser.getData()
+                "userData": targetUser.getData(),
+                "userId": targetUser.getId()
             })
         else:
             return jsonify({
@@ -154,22 +155,29 @@ def login():
 # addSampleSentence request data
 # {
 #     "text": vocab_text,
-#     "userName" : userName,
-#     "userID" : userID
+#     "username" : username,
+#     "userId" : userId
 # }
-@app.route("/addToPersonalList", methods=["POST"])
-def addToPersonalList():
+@app.route("/ModifyPersonalList", methods=["POST"])
+def ModifyPersonalList():
     jsonData = request.get_json(force=True)
     # TODO: create userFile.py and add the vocabID to the list
-    print(jsonData["text"], jsonData["userID"], jsonData["userName"])
+    print(jsonData["text"], jsonData["userId"],
+          jsonData["username"], jsonData["add"])
     userControler = Server.getUserControler()
     auth = userControler.authenticate(
-        id=jsonData["userID"], name=jsonData["userName"])
+        id=jsonData["userId"], name=jsonData["username"])
     if(auth):
-        return jsonify({
-            "status": "ok",
-            "message": jsonData["text"] + " has been added to your list"
-        })
+        if(jsonData["add"]):
+            return jsonify({
+                "status": "ok",
+                "message": jsonData["text"] + " has been added to your list"
+            })
+        else:
+            return jsonify({
+                "status": "ok",
+                "message": jsonData["text"] + " has been removed from your list"
+            })
     else:
         return jsonify({
             "status": "error",

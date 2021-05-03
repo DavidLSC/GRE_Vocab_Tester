@@ -1,13 +1,17 @@
 <template>
   <div class="testQuestion">
-    <div v-if="loading" class="loading">Loading...</div>
+    <div v-if="loading" class="loading">
+      <p>Loading...</p>
+      <i class="fas fa-spinner fa-spin"></i>
+    </div>
     <div v-if="error" class="error">
       {{ error }}
     </div>
     <div v-if="is_testOptions_visible" class="testText">
       <a class="goBackButton" v-on:click="returnButtonAction">
-        &larr; Go Back</a
-      >
+        <i class="fas fa-arrow-left"></i>
+        Go Back
+      </a>
       <span>{{ currentVocabId + "/" + Object.keys(vocabMap).length }}</span>
       <label id="testQuestionText" for="ans">
         <h2>{{ vocabMap[currentVocabId].text }}</h2>
@@ -76,7 +80,10 @@
       </div>
     </div>
     <div class="testResult" v-if="show_test_result">
-      <a class="goBackButton" v-on:click="returnButtonAction">&larr; Go Back</a>
+      <a class="goBackButton" v-on:click="returnButtonAction">
+        <i class="fas fa-arrow-left"></i>
+        Go Back
+      </a>
       <p class="resultSummary">{{ showTestResult() }}</p>
       <span
         v-for="vocab in wrongList"
@@ -90,6 +97,8 @@
       <VocabPage
         v-bind:vocabData="vocabData"
         v-on:goBack="goBackButtonAction"
+        v-on:modifyPersonalList="modifyPersonalList($event)"
+        ref="vocabPage"
       ></VocabPage>
     </div>
   </div>
@@ -140,6 +149,8 @@ export default {
   props: {
     unit: Number,
     api_fetched_data: Promise,
+    login_user_data: Object,
+    API: Object,
   },
   data() {
     return {
@@ -304,6 +315,28 @@ export default {
       this.is_vocab_page_visible = false;
       this.show_test_result = true;
     },
+
+    modifyPersonalList: function (value) {
+      console.log(this.login_user_data, value);
+      if (this.login_user_data) {
+        let jsonData = {
+          username: this.login_user_data.username,
+          userId: this.login_user_data.userId,
+          text: value.text,
+          add: value.add,
+        };
+        this.API.addToPersonalList(jsonData)
+          .then((resp) => resp.json())
+          .then((json) => {
+            console.log(json.message);
+          });
+      } else {
+        this.$refs.vocabPage.changeIsInList(false);
+        alert(
+          "Please login before adding this vocabulary to your personal list"
+        );
+      }
+    },
   },
 };
 </script>
@@ -356,7 +389,6 @@ export default {
   border-style: none;
   background-color: #c1c4ca;
   border-radius: 10px;
-  color: black;
 }
 
 .goBackButton:hover,

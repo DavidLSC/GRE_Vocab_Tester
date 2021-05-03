@@ -1,5 +1,9 @@
 <template>
   <div class="TestPage">
+    <div v-if="is_loading">
+      <p>Loading</p>
+      <i class="fas fa-spinner fa-spin"></i>
+    </div>
     <div class="unitSelection" v-if="is_unit_selection_visible">
       <h3>Please select which unit you want to be tested</h3>
       <span
@@ -15,6 +19,8 @@
     <div class="testQuestionPage" v-if="is_tq_visible">
       <TestQuestion
         v-bind:api_fetched_data="unitTestDataPromise"
+        v-bind:API="API"
+        v-bind:login_user_data="login_user_data"
         v-on:return="showUnitSelection()"
       ></TestQuestion>
     </div>
@@ -27,12 +33,18 @@ import TestQuestion from "./TestQuestion";
 export default {
   name: "TestPage",
   components: { TestQuestion },
-  props: { api_fetched_data: Promise, API: Object },
+  props: {
+    api_fetched_data: Promise,
+    API: Object,
+    login_user_data: Object,
+  },
   created() {
+    this.is_loading = true;
     this.api_fetched_data
       .then((resp) => resp.json())
       .then((json) => {
-        console.log(json);
+        this.is_loading = false;
+        this.is_unit_selection_visible = true;
         this.allUnits = json;
         return json;
       });
@@ -42,8 +54,9 @@ export default {
       selectedUnit: null,
       allUnits: [],
       unitTestDataPromise: null,
-      is_unit_selection_visible: true,
+      is_unit_selection_visible: false,
       is_tq_visible: false,
+      is_loading: false,
     };
   },
   methods: {

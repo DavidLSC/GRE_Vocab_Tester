@@ -1,10 +1,17 @@
 <template>
   <div class="menu-bar">
-    <a id="main-menu-button" v-on:click="homeButttonAction()"> Home </a>
-    <a id="test-menu-button" v-on:click="testMenuButtonAction()">Test</a>
-    <a id="dictionary-menu-button" v-on:click="dictButtonAction()"
-      >Dictionary</a
-    >
+    <a id="main-menu-button" v-on:click="homeButttonAction()">
+      <i class="fas fa-home"></i>
+      Home
+    </a>
+    <a id="test-menu-button" v-on:click="testMenuButtonAction()">
+      <i class="fas fa-clipboard-list"></i>
+      Test
+    </a>
+    <a id="dictionary-menu-button" v-on:click="dictButtonAction()">
+      <i class="fas fa-book"></i>
+      Dictionary
+    </a>
     <a id="login" v-if="!isUserLogin" v-on:click="loginButtonAction()">Login</a>
     <div class="userInfo" v-if="isUserLogin">
       <a id="userName" v-on:click="dropDownMenuVisbility">{{
@@ -71,6 +78,7 @@ export default {
       this.dropDownMenuVisbility(false);
     },
     logOut: function () {
+      this.dropDownMenuVisbility(false);
       this.$emit("logout");
     },
   },

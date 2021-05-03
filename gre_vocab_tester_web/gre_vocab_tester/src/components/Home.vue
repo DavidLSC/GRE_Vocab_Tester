@@ -8,7 +8,10 @@
     </p>
     <p>Feel free to playaround with <span>GRE Vocabulary Tester</span></p>
     <p>Visit My GitHub repository for source code</p>
-    <a href="https://github.com/DavidLSC/GRE_Vocab_Tester">GitHub Repository</a>
+
+    <a href="https://github.com/DavidLSC/GRE_Vocab_Tester"
+      ><i class="fab fa-github fa-3x"></i
+    ></a>
     <p></p>
   </div>
 </template>
@@ -26,5 +29,9 @@ export default {
 .homepage span {
   display: inline;
   font-size: 20px;
+}
+
+.homepage a {
+  color: #2c3e50;
 }
 </style>

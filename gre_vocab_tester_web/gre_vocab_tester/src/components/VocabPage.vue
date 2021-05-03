@@ -1,11 +1,27 @@
 <template>
-  <div class="vocabPage">
-    <div v-if="vocabPageLoading">Loading...</div>
-    <div v-else>
-      <a class="goBackButton" v-on:click="goBackButtonAction()"
-        >&larr; Go Back</a
-      >
-      <h1>{{ selectedVocab.text }}</h1>
+  <div>
+    <div class="vocabPageLoading" v-if="vocabPageLoading">
+      <p>Loading</p>
+      <i class="fas fa-spinner fa-spin"></i>
+    </div>
+    <div v-else class="vocabPage">
+      <a class="goBackButton" v-on:click="goBackButtonAction()">
+        <i class="fas fa-arrow-left"> </i>
+        Go Back
+      </a>
+      <span class="vocabText">
+        <h1>{{ selectedVocab.text }}</h1>
+        <i
+          class="far fa-star notAdded"
+          v-if="!isInList"
+          v-on:click="modifyPersonalList"
+        ></i>
+        <i
+          class="fas fa-star added"
+          v-if="isInList"
+          v-on:click="modifyPersonalList"
+        ></i>
+      </span>
       <span>[{{ selectedVocab.vocabRoot }}]</span>
       <span>{{ selectedVocab.definition }}</span>
       <span>Importancy: {{ selectedVocab.importancy }}</span>
@@ -25,6 +41,7 @@ export default {
     return {
       selectedVocab: {},
       vocabPageLoading: false,
+      isInList: false,
     };
   },
   created() {
@@ -49,14 +66,39 @@ export default {
     goBackButtonAction: function () {
       console.log("emit event");
       this.$emit("goBack");
-      // TODO: this.$emit() a return event for parents to handle visibility
+    },
+    //TODO: need to think should this method be in vocab
+    modifyPersonalList: function () {
+      let add = false;
+      if (this.isInList) {
+        this.changeIsInList(false);
+      } else {
+        this.changeIsInList(true);
+        add = true;
+      }
+      let vocabData = {
+        text: this.selectedVocab.text,
+        add: add,
+      };
+      this.$emit("modifyPersonalList", vocabData);
+    },
+    changeIsInList: function (bool) {
+      this.isInList = bool;
     },
   },
 };
 </script>
 
 <style scoped>
-.vocabPage div {
+.vocabPageLoading {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.vocabPage {
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -74,5 +116,23 @@ export default {
 }
 .goBackButton:active {
   background-color: #96989d;
+}
+
+.vocabText {
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+.vocabText h1 {
+  margin: 0 20px 0 0;
+}
+
+.vocabText i:hover {
+  color: #4c6ef5;
+}
+
+.added {
+  color: #4c6ef5;
 }
 </style>

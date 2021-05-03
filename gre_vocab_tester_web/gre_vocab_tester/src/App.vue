@@ -10,7 +10,11 @@
       v-on:viewProfile="viewUserProfile()"
       v-on:viewPersonalList="viewPersonalList()"
     ></MenuBar>
-    <img alt="Vue logo" src="./assets/logo.png" />
+    <!-- <img alt="Vue logo" src="./assets/logo.png" /> -->
+    <span class="fa-stack fa-lg fa-8x">
+      <i class="fab fa-glide fa-stack-1x logo"></i>
+      <i class="fas fa-square fa-stack-2x"></i>
+    </span>
     <div id="appPages">
       <div v-if="is_home_visible">
         <Home />
@@ -19,10 +23,14 @@
         <TestPage
           v-bind:api_fetched_data="fetchAllUnitData()"
           v-bind:API="API"
+          v-bind:login_user_data="login_user_data"
         ></TestPage>
       </div>
       <div v-if="is_dict_visible">
-        <Dictionary v-bind:API="API"></Dictionary>
+        <Dictionary
+          v-bind:API="API"
+          v-bind:login_user_data="login_user_data"
+        ></Dictionary>
       </div>
       <div v-if="is_userProfile_visible">
         <UserProfile
@@ -140,6 +148,8 @@ export default {
             this.loginVisibility(false);
             this.login_user_data = {
               username: value.username,
+              userId: json.userId,
+              userFile: json.userFile,
             };
           } else {
             this.$refs.LoginPage.loginError();
@@ -149,6 +159,8 @@ export default {
 
     logout: function () {
       this.login_user_data = null;
+      this.userProfileVisibility(false);
+      this.homeVisibility(true);
     },
 
     viewUserProfile: function () {
@@ -196,7 +208,12 @@ export default {
   border-radius: 20px;
 }
 
-html,
+.logo {
+  color: #41b883;
+  z-index: 1;
+}
+
+.html,
 body {
   height: auto;
 }
