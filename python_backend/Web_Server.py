@@ -118,6 +118,41 @@ def addSampleSentence():
             "message": "can't find vocab " + jsonData["text"]
         })
 
+
+# ModifyPersonalList request data
+# {
+#     "text": vocab_text,
+#     "username" : username,
+#     "userId" : userId
+# }
+@app.route("/ModifyPersonalList", methods=["POST"])
+def ModifyPersonalList():
+    jsonData = request.get_json(force=True)
+    # TODO: create userFile.py and add the vocabID to the list
+    print(jsonData["text"], jsonData["userId"],
+          jsonData["username"], jsonData["add"])
+    userControler = Server.getUserControler()
+    auth = userControler.authenticate(
+        id=jsonData["userId"], name=jsonData["username"])
+    if(auth):
+        if(jsonData["add"]):
+            return jsonify({
+                "status": "ok",
+                "message": jsonData["text"] + " has been added to your list"
+            })
+        else:
+            return jsonify({
+                "status": "ok",
+                "message": jsonData["text"] + " has been removed from your list"
+            })
+    else:
+        return jsonify({
+            "status": "error",
+            "message": "authentication error"
+        })
+
+# USER ACCOUNT ENDPOINT
+
 # login request data
 # {
 #       "userName": username
@@ -152,36 +187,27 @@ def login():
         })
 
 
-# addSampleSentence request data
-# {
-#     "text": vocab_text,
-#     "username" : username,
-#     "userId" : userId
-# }
-@app.route("/ModifyPersonalList", methods=["POST"])
-def ModifyPersonalList():
+@app.route("/createAccount", methods=["POST"])
+def createAccount():
     jsonData = request.get_json(force=True)
-    # TODO: create userFile.py and add the vocabID to the list
-    print(jsonData["text"], jsonData["userId"],
-          jsonData["username"], jsonData["add"])
+    # {
+    #   username : String,
+    #   password: String,
+    #   email: String
+    # }
     userControler = Server.getUserControler()
-    auth = userControler.authenticate(
-        id=jsonData["userId"], name=jsonData["username"])
-    if(auth):
-        if(jsonData["add"]):
-            return jsonify({
-                "status": "ok",
-                "message": jsonData["text"] + " has been added to your list"
-            })
-        else:
-            return jsonify({
-                "status": "ok",
-                "message": jsonData["text"] + " has been removed from your list"
-            })
+    if not userControler.getUserByName(jsonData["username"]):
+        createdUserData = userControler.createUser(userName=jsonData["username"],
+                                                   password=jsonData["password"], email=jsonData["email"])
+        print(createdUserData)
+        return jsonify({
+            "status": "ok",
+            "message": "Account user " + jsonData["username"] + " has been created."
+        })
     else:
         return jsonify({
             "status": "error",
-            "message": "authentication error"
+            "message": "user " + jsonData["username"] + " already exist"
         })
 
 
@@ -189,7 +215,6 @@ def ModifyPersonalList():
 def getUserInfo():
     #{username: String}
     jsonData = request.get_json(force=True)
-    print(jsonData)
     userControler = Server.getUserControler()
     target = userControler.getUserByName(jsonData["username"])
     if target:

@@ -32,6 +32,9 @@
         Go Back
       </a>
       <h3>Search History</h3>
+      <p v-if="history.length == 0" style="color: #818287; font-size: 18px">
+        You haven't search any vocabulary.
+      </p>
       <span
         v-for="{ word, id } in history.slice().reverse()"
         v-bind:key="id"
@@ -246,7 +249,7 @@ export default {
   border-style: none;
   border-radius: 10px;
   background-color: #c1c4ca;
-  margin: 10px 25vw 10px 25vw;
+  margin: 10px 25% 10px 25%;
   padding: 10px 10px 10px 10px;
 }
 

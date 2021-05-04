@@ -1,5 +1,5 @@
 <template>
-  <div class="menu-bar">
+  <div class="menu-bar" v-bind:class="{ responsive: menuIsResponsive }">
     <a id="main-menu-button" v-on:click="homeButttonAction()">
       <i class="fas fa-home"></i>
       Home
@@ -23,6 +23,9 @@
         <a v-on:click="logOut">Logout</a>
       </div>
     </div>
+    <a class="icon" v-on:click="rwd_showMenuBar">
+      <i class="fas fa-bars"></i>
+    </a>
   </div>
 </template>
 
@@ -36,6 +39,8 @@ export default {
     return {
       isUserLogin: false,
       is_userInfo_dropdown_visible: false,
+      //RWD control
+      menuIsResponsive: false,
     };
   },
   watch: {
@@ -64,8 +69,14 @@ export default {
     dropDownMenuVisbility: function () {
       if (this.is_userInfo_dropdown_visible) {
         this.is_userInfo_dropdown_visible = false;
+        if (this.menuIsResponsive) {
+          this.$emit("rwdDropDownExpand", false);
+        }
       } else {
         this.is_userInfo_dropdown_visible = true;
+        if (this.menuIsResponsive) {
+          this.$emit("rwdDropDownExpand", true);
+        }
       }
     },
     //TODO: make a userPage for Profile and Personal List
@@ -81,6 +92,19 @@ export default {
       this.dropDownMenuVisbility(false);
       this.$emit("logout");
     },
+
+    //RWD
+    rwd_showMenuBar: function () {
+      if (this.menuIsResponsive) {
+        console.log("is   ");
+        this.menuIsResponsive = false;
+        this.$emit("rwdMenuExpand", false);
+      } else {
+        console.log("is  not");
+        this.menuIsResponsive = true;
+        this.$emit("rwdMenuExpand", true);
+      }
+    },
   },
 };
 </script>
@@ -93,12 +117,20 @@ export default {
   top: 0px;
   left: 0px;
   background-color: #333;
+  z-index: 1;
   /* overflow: hidden; */
 }
 
-.menu-bar a:not(.userLoginDropDown a) {
+/* #dictionary-menu-button,
+#test-menu-button,
+#main-menu-button,
+#login,
+#userName,
+.icon  */
+.menu-bar a {
   float: left;
   color: #f2f2f2;
+  display: block;
   text-align: center;
   padding: 14px 16px;
   font-size: 17px;
@@ -109,6 +141,10 @@ export default {
   background-color: #41b883;
 }
 
+.menu-bar a.icon {
+  display: none;
+}
+
 #login,
 #userName {
   float: right;
@@ -117,9 +153,6 @@ export default {
 .userInfo {
   float: right;
   overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
 }
 
 .userLoginDropDown {
@@ -127,20 +160,87 @@ export default {
   position: absolute;
   display: block;
   z-index: 1;
-  background-color: #333;
-  /* min-width: 160px; */
+  background-color: #404040;
+  box-shadow: 0px 0px 16px 8px rgba(0, 0, 0, 0.2);
+  /* right: 0; */
 }
 
 .userLoginDropDown a {
+  float: none;
   color: #f2f2f2;
   padding: 12px 16px;
   display: block;
   text-align: center;
-  float: none;
   font-size: 17px;
+  /* right: 0; */
 }
 
 .userInfo:hover .userLoginDropDown {
   display: block;
+}
+
+@media screen and (max-width: 600px) {
+  /* #dictionary-menu-button,
+  #test-menu-button,
+  #login,
+  .userInfo  */
+  .menu-bar a {
+    display: none;
+  }
+
+  /* #main-menu-button {
+    display: block;
+  } */
+  .menu-bar a.icon {
+    float: left;
+    display: block;
+  }
+
+  .menu-bar {
+    position: absolute;
+    overflow: hidden;
+  }
+}
+
+@media screen and (max-width: 600px) {
+  .menu-bar.responsive {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+  }
+  .menu-bar.responsive .icon {
+    order: -1;
+  }
+  /* .menu-bar.responsive .icon {
+    position: absolute;
+    right: 0;
+    top: 0;
+  } */
+  .menu-bar.responsive a {
+    float: none;
+    display: block;
+    text-align: left;
+  }
+
+  #login,
+  #userName {
+    float: none;
+  }
+
+  .userLoginDropDown {
+    margin: 0;
+  }
+
+  .menu-bar.responsive .userInfo {
+    float: none;
+  }
+  .menu-bar.responsive .userLoginDropDown {
+    position: relative;
+  }
+  .menu-bar.responsive .userInfo #userName {
+    display: block;
+    width: 100%;
+    text-align: left;
+  }
 }
 </style>

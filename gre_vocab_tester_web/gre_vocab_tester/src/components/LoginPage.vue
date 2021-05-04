@@ -19,7 +19,7 @@
           cursor: pointer;
           align-self: flex-start;
         "
-        v-on:click="createAccount"
+        v-on:click="viewCreateAccountPage"
         >New? Create a free account</a
       >
       <span class="loginButtons">
@@ -27,37 +27,33 @@
         <span class="important" v-on:click="loginSubmit()">Login</span>
       </span>
     </div>
-    <div v-else>
-      <div v-if="is_create_account_visible" class="accountCreateForm">
-        <span>Create a new account</span>
-        <span>Username:</span>
-        <span v-if="createUsernameError" style="color: red"
-          >Need to be longer then 8 letters</span
-        >
-        <input v-model="createUsername" />
-        <span>Password:</span>
-        <span v-if="createPasswordError" style="color: red"
-          >Need to be longer then 8 letters</span
-        >
-        <input v-model="createPassword" />
-        <span>Email:</span>
-        <span v-if="createEmailError" style="color: red"
-          >Please enter the correct email form.</span
-        >
-        <input v-model="createEmail" />
-        <span class="loginButtons">
-          <span v-on:click="loginCancel()">Cancel</span>
-          <span class="important" v-on:click="createAcountSubmit()"
-            >Create</span
-          >
-        </span>
-      </div>
-      <div v-else>
-        <span>Congratulation your account has been created</span>
-        <span class="loginButtons">
-          <span v-on:click="returnToLoginPage">Go to login page</span>
-        </span>
-      </div>
+    <div v-if="is_create_account_visible" class="accountCreateForm">
+      <span>Create a new account</span>
+      <span>Username:</span>
+      <span v-if="createUsernameError" style="color: red; font-size: 15px"
+        >Need to be longer then 8 letters</span
+      >
+      <input v-model="createUsername" />
+      <span>Password:</span>
+      <span v-if="createPasswordError" style="color: red; font-size: 15px"
+        >Need to be longer then 8 letters</span
+      >
+      <input v-model="createPassword" />
+      <span>Email:</span>
+      <span v-if="createEmailError" style="color: red; font-size: 15px"
+        >Please enter the correct email form.</span
+      >
+      <input v-model="createEmail" />
+      <span class="loginButtons">
+        <span v-on:click="loginCancel()">Cancel</span>
+        <span class="important" v-on:click="createAccount()">Create</span>
+      </span>
+    </div>
+    <div v-if="is_congrat_visible">
+      <span>Congratulation your account has been created</span>
+      <span class="loginButtons">
+        <span v-on:click="returnToLoginPage">Go to login page</span>
+      </span>
     </div>
     <div class="loading" v-if="showLoading">
       <p>Loading</p>
@@ -76,7 +72,8 @@ export default {
       password: null,
       showLoading: false,
       is_login_form_visible: true,
-      is_create_account_visible: true,
+      is_create_account_visible: false,
+      is_congrat_visible: false,
       isLoginError: false,
 
       passwordFieldType: "password",
@@ -92,6 +89,7 @@ export default {
     loginError: function () {
       this.isLoginError = true;
       this.showLoading = false;
+      this.is_login_form_visible = true;
     },
     loginCancel: function () {
       this.$emit("cancel");
@@ -114,12 +112,12 @@ export default {
         alert("Please enter your username and password before login");
       }
     },
-    createAccount: function () {
+    viewCreateAccountPage: function () {
       console.log("create");
       this.is_login_form_visible = false;
       this.is_create_account_visible = true;
     },
-    createAcountSubmit: function () {
+    createAccount: function () {
       console.log(
         "create Account submission",
         this.createUsername,
@@ -134,10 +132,14 @@ export default {
           this.createPasswordError != true &&
           this.createUsernameError != true
         ) {
-          //TODO: call the createAccount API endpoint
-          this.createEmailError = false;
-          this.$emit("createAccount");
+          let createAccountData = {
+            username: this.createUsername,
+            password: this.createPassword,
+            email: this.createEmail,
+          };
+          this.$emit("createAccount", createAccountData);
           this.is_create_account_visible = false;
+          this.is_congrat_visible = true;
         }
       } else {
         alert("Please enter each part to create account");
@@ -150,15 +152,16 @@ export default {
       } else {
         this.createEmailError = false;
       }
-      this.createUsername.length > 8
+      this.createUsername.length > 7
         ? (this.createUsernameError = false)
         : (this.createUsernameError = true);
-      this.createPassword.length > 8
+      this.createPassword.length > 7
         ? (this.createPasswordError = false)
         : (this.createPasswordError = true);
     },
     returnToLoginPage: function () {
       this.is_login_form_visible = true;
+      this.is_congrat_visible = false;
     },
   },
 };

@@ -1,5 +1,12 @@
 <template>
-  <div id="app">
+  <div
+    id="app"
+    v-bind:class="{
+      'margin-60px': is_app_margin_responsive,
+      'margin-260px': is_rwd_menu_expanded,
+      'margin-400px': is_rwd_dropdown_expanded,
+    }"
+  >
     <MenuBar
       v-bind:login_user_data="login_user_data"
       v-on:showTQ="tqVisibility(true)"
@@ -9,11 +16,19 @@
       v-on:logout="logout()"
       v-on:viewProfile="viewUserProfile()"
       v-on:viewPersonalList="viewPersonalList()"
+      v-on:rwdDropDownExpand="rwd_appMarginTop('rwdDropDownExpand', $event)"
+      v-on:rwdMenuExpand="rwd_appMarginTop('rwdMenuExpand', $event)"
     ></MenuBar>
     <!-- <img alt="Vue logo" src="./assets/logo.png" /> -->
-    <span class="fa-stack fa-lg fa-8x">
-      <i class="fab fa-glide fa-stack-1x logo"></i>
-      <i class="fas fa-square fa-stack-2x"></i>
+    <span
+      class="fa-stack fa-lg logo"
+      v-bind:class="{
+        'fa-8x': !is_icon_responsive,
+        'fa-6x': is_icon_responsive,
+      }"
+    >
+      <i class="fab fa-glide fa-stack-1x logo1"></i>
+      <i class="fas fa-square fa-stack-2x logo2"></i>
     </span>
     <div id="appPages">
       <div v-if="is_home_visible">
@@ -44,6 +59,7 @@
         ref="LoginPage"
         v-on:cancel="loginVisibility(false)"
         v-on:submit="loginSubmit($event)"
+        v-on:createAccount="createAccount($event)"
       />
     </div>
   </div>
@@ -85,11 +101,25 @@ export default {
       login_user_data: null,
       //userProfile data
       userProfileMode: null,
+
+      //RWD icon
+      is_icon_responsive: false,
+      //RWD app margin-top
+      is_app_margin_responsive: false,
+      is_rwd_menu_expanded: false,
+      is_rwd_dropdown_expanded: false,
     };
   },
   created() {
     const API = new API_Connector("https://gre-vocab-flask-app.herokuapp.com/");
     this.API = API;
+
+    //RWD
+    if (window.matchMedia("(max-width:400px)").matches) {
+      this.is_icon_responsive = true;
+    } else {
+      this.is_icon_responsive = false;
+    }
   },
   methods: {
     tqVisibility: function (is_test_visible) {
@@ -132,7 +162,6 @@ export default {
     //TODO: try to pass this under two level
     fetchAllTestData: function () {
       return this.API.getAllTest();
-      //return fetch("http://localhost:5000/getAllTest");
     },
 
     // this passes a promise to the TestPage for allUnits
@@ -154,6 +183,14 @@ export default {
           } else {
             this.$refs.LoginPage.loginError();
           }
+        });
+    },
+
+    createAccount: function (value) {
+      this.API.createAccount(value)
+        .then((resp) => resp.json())
+        .then((json) => {
+          console.log(json.message);
         });
     },
 
@@ -183,6 +220,26 @@ export default {
       this.userProfileMode = "personalList";
       this.userProfileVisibility(true);
     },
+
+    //RWD
+    rwd_appMarginTop: function (mode, value) {
+      console.log(mode, value);
+      if (mode == "rwdMenuExpand") {
+        if (value) {
+          console.log("xx");
+          this.is_rwd_menu_expanded = true;
+        } else {
+          console.log("yy");
+          this.is_rwd_menu_expanded = false;
+        }
+      } else if (mode == "rwdDropDownExpand") {
+        if (value) {
+          this.is_rwd_dropdown_expanded = true;
+        } else {
+          this.is_rwd_dropdown_expanded = false;
+        }
+      }
+    },
   },
 };
 </script>
@@ -195,8 +252,8 @@ export default {
   text-align: center;
   font-size: 20px;
   color: #2c3e50;
-  margin-top: 60px;
   height: 100%;
+  margin-top: 60px;
 }
 
 #appPages {
@@ -208,7 +265,7 @@ export default {
   border-radius: 20px;
 }
 
-.logo {
+.logo1 {
   color: #41b883;
   z-index: 1;
 }
@@ -220,5 +277,19 @@ body {
 
 html {
   background-color: #4f7b95;
+}
+
+@media screen and (max-width: 600px) {
+  #app.margin-60px {
+    margin-top: 60px;
+  }
+
+  #app.margin-260px {
+    margin-top: 260px;
+  }
+
+  #app.margin-400px {
+    margin-top: 400px;
+  }
 }
 </style>

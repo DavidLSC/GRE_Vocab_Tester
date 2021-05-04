@@ -66,6 +66,18 @@ class API_Connector {
     }
 
     /**
+     * createAccount request data
+     * {
+     *      "username":
+     *      "password":
+     *      "email":
+     * }
+     */
+    createAccount = (jsonData) => {
+        return this.API_fetch(this.api_url + "/createAccount", "POST", jsonData)
+    }
+
+    /**
      * getUserInfo request data
      * {
      *      "username":
